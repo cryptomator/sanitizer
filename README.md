@@ -5,7 +5,7 @@
 ## Usage
 
 ```
-java -jar sanitizer-0.1-SNAPSHOT.jar -vault vaultToCheck
+java -jar sanitizer-0.1.jar -vault vaultToCheck
             [-passphraseFile passphraseFile] [-solve enabledSolution ...]
             [-output outputFile]
 
@@ -41,13 +41,13 @@ Install the JCE files following the description in the README.txt file inside th
 When you have everything setup you can run the integrity check from the command line (cmd.exe on Windows) using:
 
 ```
-java -jar sanitizer-0.1-SNAPSHOT.jar -vault <pathToYourVault>
+java -jar sanitizer-0.1.jar -vault <pathToYourVault>
 ```
 
 You will be asked for the vault passphrase in this case. If that fails you may store your passphrase in a file (without line break at the end!) and use
 
 ```
-java -jar sanitizer-0.1-SNAPSHOT.jar -vault <pathToYourVault> -passphraseFile <pathToThePassphraseFile>
+java -jar sanitizer-0.1.jar -vault <pathToYourVault> -passphraseFile <pathToThePassphraseFile>
 ```
 
 After completion the tool will print how many problems were found and create a file `<vaultname>.vaultcheck.txt`.
