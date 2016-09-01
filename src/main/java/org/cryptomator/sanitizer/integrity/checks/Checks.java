@@ -4,6 +4,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.Files.readAllBytes;
 import static java.nio.file.StandardOpenOption.READ;
 import static java.util.regex.Pattern.CASE_INSENSITIVE;
+import static org.cryptomator.sanitizer.integrity.checks.HasCorrespondingDirectoryFileCheck.ROOT_DIRECTORY_ID;
 import static org.cryptomator.sanitizer.utils.StringUtils.cutOfAtEnd;
 
 import java.nio.ByteBuffer;
@@ -18,6 +19,14 @@ import org.cryptomator.cryptolib.api.KeyFile;
 public class Checks {
 
 	static final long MAX_NAME_LENGTH = 10000;
+
+	public static CompoundFileCheck requiredFile(String name) {
+		return new CompoundFileCheck(name);
+	}
+
+	public static CompoundDirectoryCheck requiredDir(String name) {
+		return new CompoundDirectoryCheck(name);
+	}
 
 	public static CompoundFileCheck file() {
 		return new CompoundFileCheck();
@@ -168,6 +177,16 @@ public class Checks {
 
 	public static Check hasCorrespondingDirectoryFile(Cryptor cryptor, Path pathToVault) {
 		return new HasCorrespondingDirectoryFileCheck(cryptor, pathToVault);
+	}
+
+	public static Check rootDirectoryIfMachting(Cryptor cryptor) {
+		String hashedRootDirectoryId = cryptor.fileNameCryptor().hashDirectoryId(ROOT_DIRECTORY_ID);
+		return (problems, path) -> {
+			String hashedDirectoryId = path.getParent().getFileName().toString() + path.getFileName();
+			if (hashedDirectoryId.equals(hashedRootDirectoryId)) {
+				problems.reportRootDirectoryExists(path);
+			}
+		};
 	}
 
 }

@@ -83,6 +83,10 @@ public class Problems {
 		report(new MissingFileProblem(senstive(path), Severity.ERROR));
 	}
 
+	public void reportMissingFile(Path dir, String name) {
+		report(new MissingFileProblem(senstive(dir), name, Severity.ERROR));
+	}
+
 	public void reportMissingDirectory(Path path, boolean exists) {
 		report(new MissingDirectoryProblem(senstive(path), exists));
 	}
@@ -97,6 +101,10 @@ public class Problems {
 
 	public void reportInvalidMasterkeyFile(Path path) {
 		report(new InvalidMasterkeyFile(senstive(path), Severity.FATAL));
+	}
+
+	public void reportRootDirectoryExists(Path path) {
+		report(new RootDirectoryInfo(senstive(path)));
 	}
 
 	private Sensitive<Exception> sensitive(Exception e) {

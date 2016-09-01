@@ -5,15 +5,18 @@
 ## Usage
 
 ```
-java -jar sanitizer-0.1.jar -vault vaultToCheck
-            [-passphraseFile passphraseFile] [-solve enabledSolution ...]
-            [-output outputFile]
+java -jar sanitizer-0.1.jar -vault vaultToCheck [-passphraseFile
+            passphraseFile] [-solve enabledSolution ...] [-output
+            outputPrefix]
 
 Detects problems in Cryptomator vaults.
 
-    --output <outputFile>               The file to write results to.
-                                        Default:
-                                        {vaultname}.vaultcheck.txt
+    --output <outputPrefix>             The prefix of the output files to
+                                        write results to. Will create two
+                                        output files:
+                                        * <outputPrefix>.structure.txt and
+                                        * <outputPrefix>.check.txt.
+                                        Default: name of vault
     --passphrase <passphrase>           DO NOT USE. ONLY FOR TESTING
                                         PURPOSES. The cleartext vault
                                         passphrase. Omit this and you will
@@ -50,7 +53,10 @@ You will be asked for the vault passphrase in this case. If that fails you may s
 java -jar sanitizer-0.1.jar -vault <pathToYourVault> -passphraseFile <pathToThePassphraseFile>
 ```
 
-After completion the tool will print how many problems were found and create a file `<vaultname>.vaultcheck.txt`.
+After completion the tool will print how many problems were found and create two files:
+
+* `<vault name>.structure.txt`: The full structure of the vault including all files and directories. Contains only encrypted names and the size of files < 300b so we can not see your data. This may help us to diagnose issues not already handled by the sanitizer.
+* `<vault name>.check.txt`: A list of known issues and some informations. This includes the name of the encrypted root directory. This is useful to check how the root directory looks like when analyzing the structure file.
 
 ## Building
 

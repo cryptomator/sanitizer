@@ -3,6 +3,7 @@ package org.cryptomator.sanitizer;
 import static java.lang.String.format;
 import static java.lang.String.join;
 import static java.nio.charset.Charset.defaultCharset;
+import static java.nio.file.Files.deleteIfExists;
 import static java.nio.file.Files.exists;
 import static java.nio.file.Files.isDirectory;
 import static java.nio.file.Files.isReadable;
@@ -10,8 +11,10 @@ import static java.nio.file.Files.isRegularFile;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.fill;
 
+import java.io.BufferedReader;
 import java.io.Console;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
@@ -34,7 +37,7 @@ import org.cryptomator.sanitizer.integrity.AbortCheckException;
 
 public class Args {
 
-	private static final String USAGE = "java -jar sanitizer-" + Version.get() + ".jar -vault vaultToCheck [-passphraseFile passphraseFile] [-solve enabledSolution ...] [-output outputFile]";
+	private static final String USAGE = "java -jar sanitizer-" + Version.get() + ".jar -vault vaultToCheck [-passphraseFile passphraseFile] [-solve enabledSolution ...] [-output outputPrefix]";
 	private static final String HEADER = "\nDetects problems in Cryptomator vaults.\n\n";
 	private static final Options OPTIONS = new Options();
 	private static final Set<String> ALLOWED_PROBLEMS_TO_SOLVE = new HashSet<>(asList("LowercasedFile", "MissingEqualsSign", "OrphanMFile", "UppercasedFile"));
@@ -67,21 +70,26 @@ public class Args {
 		OPTIONS.addOption(Option.builder() //
 				.longOpt("output") //
 				.hasArg() //
-				.argName("outputFile") //
-				.desc("The file to write results to. Default: <vaultname>.vaultcheck.txt") //
+				.argName("outputPrefix") //
+				.desc("The prefix of the output files to write results to. Will create two output files:\n" //
+						+ "* <outputPrefix>.structure.txt and\n" //
+						+ "* <outputPrefix>.check.txt.\n" //
+						+ "Default: name of vault") //
 				.build());
 	}
 
 	private final Path vaultLocation;
-	private final Path outputFile;
 	private CharBuffer passphrase;
 	private final Set<String> problemsToSolve;
+
+	private Path checkOutputFile;
+	private Path structureOutputFile;
 
 	public Args(CommandLine commandLine) throws ParseException {
 		this.vaultLocation = vaultLocation(commandLine);
 		this.passphrase = passphrase(commandLine);
-		this.outputFile = outputFile(commandLine);
 		this.problemsToSolve = problemsToSolve(commandLine);
+		setOutputFiles(commandLine);
 	}
 
 	private Set<String> problemsToSolve(CommandLine commandLine) throws ParseException {
@@ -166,8 +174,12 @@ public class Args {
 		return CharBuffer.wrap(console.readPassword("Vault password: "));
 	}
 
-	public Path outputFile() {
-		return outputFile;
+	public Path structureOutputFile() {
+		return structureOutputFile;
+	}
+
+	public Path checkOutputFile() {
+		return checkOutputFile;
 	}
 
 	private Path vaultLocation(CommandLine commandLine) throws ParseException {
@@ -183,23 +195,36 @@ public class Args {
 		throw new ParseException("vaultLocation is not a directory");
 	}
 
-	private Path outputFile(CommandLine commandLine) throws ParseException {
-		String output = commandLine.getOptionValue("output");
-		if (output == null) {
-			output = vaultLocation.getFileName().toString() + ".vaultcheck.txt";
-			int i = 2;
-			while (exists(Paths.get(output))) {
-				output = vaultLocation.getFileName().toString() + "_" + (i++) + ".vaultcheck.txt";
+	private void setOutputFiles(CommandLine commandLine) throws ParseException {
+		String prefix = commandLine.getOptionValue("output");
+		if (prefix == null) {
+			prefix = vaultLocation.getFileName().toString();
+		}
+		String structureOutput = prefix + ".structure.txt";
+		String checkOutput = prefix + ".check.txt";
+		if (exists(Paths.get(structureOutput)) || exists(Paths.get(checkOutput))) {
+			String input;
+			do {
+				System.out.print("Output file(s) exist. Overwrite [Y|n]? ");
+				try {
+					input = new BufferedReader(new InputStreamReader(System.in)).readLine();
+				} catch (IOException e) {
+					throw new UncheckedIOException(e);
+				}
+			} while (input != null && !input.matches("[yYnN]?"));
+			if (input == null || input.equalsIgnoreCase("n")) {
+				throw new ParseException("Output file(s) exists");
 			}
 		}
 		try {
-			Path path = Paths.get(output);
-			if (exists(path)) {
-				throw new ParseException("Output file exists");
-			}
-			return path;
+			structureOutputFile = Paths.get(structureOutput);
+			checkOutputFile = Paths.get(checkOutput);
+			deleteIfExists(structureOutputFile);
+			deleteIfExists(checkOutputFile);
 		} catch (InvalidPathException e) {
 			throw new ParseException("Invalid output file");
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
 		}
 	}
 

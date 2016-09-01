@@ -19,7 +19,7 @@ import org.cryptomator.sanitizer.integrity.problems.Problems;
 
 class HasCorrespondingDirectoryFileCheck implements Check {
 
-	private static final String ROOT_DIRECTORY_ID = "";
+	public static final String ROOT_DIRECTORY_ID = "";
 	private final Pattern DIRECTORY_FILE_NAME_PATTERN = Pattern.compile("(0([A-Z2-7]{8})*[A-Z2-7=]{1,8})|([A-Z2-7]{32}\\.lng)", CASE_INSENSITIVE);
 	private final Set<String> referencedDirectories = new HashSet<>();
 	private boolean collectedReferencedDirectories = false;

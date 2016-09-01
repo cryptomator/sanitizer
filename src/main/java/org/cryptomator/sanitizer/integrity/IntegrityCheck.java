@@ -22,6 +22,7 @@ import static org.cryptomator.sanitizer.integrity.checks.Checks.lngNameDoesNotCo
 import static org.cryptomator.sanitizer.integrity.checks.Checks.nameDoesNotContainLowercaseChars;
 import static org.cryptomator.sanitizer.integrity.checks.Checks.nameDoesNotContainUppercaseChars;
 import static org.cryptomator.sanitizer.integrity.checks.Checks.referencedDirectoryExists;
+import static org.cryptomator.sanitizer.integrity.checks.Checks.rootDirectoryIfMachting;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -100,6 +101,7 @@ public class IntegrityCheck {
 						dir().that(hasName("[A-Z2-7]{2}")).validate(nameDoesNotContainLowercaseChars()).containing( //
 								dir().that(hasName("[A-Z2-7]{30}")) //
 										.validate(nameDoesNotContainLowercaseChars()).validate(hasCorrespondingDirectoryFile(cryptor, pathToVault)) //
+										.reportAs(rootDirectoryIfMachting(cryptor)) //
 										.containing( //
 												file().that(hasName("0([A-Z2-7]{8})*[A-Z2-7=]{8}")) //
 														.validate(nameDoesNotContainLowercaseChars()) //
@@ -108,13 +110,13 @@ public class IntegrityCheck {
 														.validate(nameDoesNotContainLowercaseChars()) //
 														.validate(hasMinSize(88)), //
 												file().that(hasName("[A-Z2-7]{32}\\.lng").and(hasCorrespondingMFileIn(pathToVault).that(containsValidFileName()))) //
-														.validate(nameDoesNotContainLowercaseChars()) //
+														.validate(lngNameDoesNotContainLowercaseChars()) //
 														.validate(hasMinSize(88)), //
 												file().that(hasName("[A-Z2-7]{32}\\.lng").and(hasCorrespondingMFileIn(pathToVault).that(containsValidDirectoryFileName()))) //
-														.validate(nameDoesNotContainLowercaseChars()) //
+														.validate(lngNameDoesNotContainLowercaseChars()) //
 														.validate(hasSize(36).and(containsUuid()).and(referencedDirectoryExists)), //
 												file().that(hasName("[A-Z2-7]{32}\\.lng")) //
-														.validate(nameDoesNotContainLowercaseChars()) //
+														.validate(lngNameDoesNotContainLowercaseChars()) //
 														.validate(hasCorrespondingMFileIn(pathToVault)), //
 												file().that(hasName("0?([A-Z2-7]{8})*[A-Z2-7=]{1,7}")) //
 														.validate(nameDoesNotContainLowercaseChars()) //
