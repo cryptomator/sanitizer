@@ -80,6 +80,7 @@ public class Sanitizer {
 			throw new UncheckedIOException(e);
 		}
 		System.out.println("Wrote structure to " + args.structureOutputFile() + ".");
+		System.out.println();
 	}
 
 	private static Consumer<Path> writePathToOutput(Args args, PrintWriter writer) {
