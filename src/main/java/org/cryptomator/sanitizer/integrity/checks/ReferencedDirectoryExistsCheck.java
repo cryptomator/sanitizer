@@ -22,12 +22,12 @@ class ReferencedDirectoryExistsCheck implements Check {
 	}
 
 	@Override
-	public void checkThrowingExceptions(Problems problems, Path path) throws IOException {
-		String directoryId = new String(readAllBytes(path), UTF_8);
+	public void checkThrowingExceptions(Problems problems, Path dirfile) throws IOException {
+		String directoryId = new String(readAllBytes(dirfile), UTF_8);
 		String hashedDirectoryId = cryptor.fileNameCryptor().hashDirectoryId(directoryId);
 		Path directory = pathToVault.resolve("d").resolve(hashedDirectoryId.substring(0, 2)).resolve(hashedDirectoryId.substring(2));
 		if (!isDirectory(directory)) {
-			problems.reportMissingDirectory(directory, Files.exists(directory));
+			problems.reportMissingDirectory(directory, dirfile, Files.exists(directory));
 		}
 	}
 
