@@ -1,12 +1,14 @@
 package org.cryptomator.sanitizer.integrity.checks;
 
 import static java.nio.file.Files.walk;
+import static org.cryptomator.sanitizer.utils.NameUtil.decryptablePartOfName;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -17,7 +19,7 @@ class HasCorrespondingDFileCheck implements Check {
 	private static final Pattern LNG_FILE = Pattern.compile("[A-Z2-7]{32}\\.lng");
 
 	private final Path pathToVault;
-	private final Set<String> dFiles = new HashSet<>();
+	private final Map<String, Path> dFileNamesToPaths = new HashMap<>();
 	private boolean dFilesCollected;
 
 	public HasCorrespondingDFileCheck(Path pathToVault) {
@@ -28,9 +30,14 @@ class HasCorrespondingDFileCheck implements Check {
 	public void checkThrowingExceptions(Problems problems, Path path) throws IOException {
 		collectDFiles();
 		String fileName = path.getFileName().toString();
-		if (!dFiles.contains(fileName)) {
+		if (!dFileNamesToPaths.containsKey(fileName)) {
 			problems.reportOrphanMFile(path);
 		}
+	}
+
+	public Optional<Path> pathOfDFile(String mFileName) {
+		String name = decryptablePartOfName(mFileName) + ".lng";
+		return Optional.ofNullable(dFileNamesToPaths.get(name));
 	}
 
 	private void collectDFiles() throws IOException {
@@ -42,7 +49,7 @@ class HasCorrespondingDFileCheck implements Check {
 			files.filter(Files::isRegularFile).forEach(file -> {
 				String fileName = file.getFileName().toString();
 				if (dFolder.relativize(file).getNameCount() == 3 && LNG_FILE.matcher(fileName).matches()) {
-					dFiles.add(fileName);
+					dFileNamesToPaths.put(fileName, file);
 				}
 			});
 		}

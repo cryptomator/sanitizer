@@ -1,5 +1,6 @@
 package org.cryptomator.sanitizer.integrity.problems;
 
+import static org.cryptomator.sanitizer.utils.NameUtil.numMissing;
 import static org.cryptomator.sanitizer.utils.StringUtils.repeat;
 
 import java.io.IOException;
@@ -36,14 +37,6 @@ class FileWithMissingEqualsSignSolution implements Solution {
 		String name = absoluteFile.getFileName().toString();
 		String fixedName = name + repeat('=', numMissing(name));
 		return absoluteFile.getParent().resolve(fixedName);
-	}
-
-	private int numMissing(String name) {
-		if (name.startsWith("0")) {
-			return 8 - (name.length() - 1) % 8;
-		} else {
-			return 8 - name.length() % 8;
-		}
 	}
 
 }

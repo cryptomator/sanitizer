@@ -18,9 +18,9 @@ import static org.cryptomator.sanitizer.integrity.checks.Checks.hasMinSize;
 import static org.cryptomator.sanitizer.integrity.checks.Checks.hasName;
 import static org.cryptomator.sanitizer.integrity.checks.Checks.hasSize;
 import static org.cryptomator.sanitizer.integrity.checks.Checks.isMasterkeyBackupFile;
-import static org.cryptomator.sanitizer.integrity.checks.Checks.lngNameDoesNotContainLowercaseChars;
 import static org.cryptomator.sanitizer.integrity.checks.Checks.nameDoesNotContainLowercaseChars;
 import static org.cryptomator.sanitizer.integrity.checks.Checks.nameDoesNotContainUppercaseChars;
+import static org.cryptomator.sanitizer.integrity.checks.Checks.nameIsDecryptable;
 import static org.cryptomator.sanitizer.integrity.checks.Checks.referencedDirectoryExists;
 import static org.cryptomator.sanitizer.integrity.checks.Checks.rootDirectoryIfMachting;
 
@@ -37,6 +37,7 @@ import org.cryptomator.cryptolib.api.KeyFile;
 import org.cryptomator.cryptolib.v1.CryptorProviderImpl;
 import org.cryptomator.sanitizer.Csprng;
 import org.cryptomator.sanitizer.integrity.checks.Check;
+import org.cryptomator.sanitizer.integrity.checks.HasCorrespondingDirectoryFileCheck;
 import org.cryptomator.sanitizer.integrity.problems.Problem;
 import org.cryptomator.sanitizer.integrity.problems.Problems;
 
@@ -96,43 +97,61 @@ public class IntegrityCheck {
 
 	private Check vaultFormatChecks(Cryptor cryptor, Path pathToVault) {
 		Check referencedDirectoryExists = referencedDirectoryExists(cryptor, pathToVault);
+		HasCorrespondingDirectoryFileCheck hasCorrespondingDirectoryFileCheck = hasCorrespondingDirectoryFile(cryptor, pathToVault);
+		Check nameIsDecryptable = nameIsDecryptable(cryptor, hasCorrespondingDirectoryFileCheck);
+		Check hasCorrespondingDFile = hasCorrespondingDFileIn(pathToVault);
 		return dir().containing( //
 				dir().that(hasName("d")).validate(nameDoesNotContainUppercaseChars()).containing( //
 						dir().that(hasName("[A-Z2-7]{2}")).validate(nameDoesNotContainLowercaseChars()).containing( //
 								dir().that(hasName("[A-Z2-7]{30}")) //
-										.validate(nameDoesNotContainLowercaseChars()).validate(hasCorrespondingDirectoryFile(cryptor, pathToVault)) //
+										.validate(nameDoesNotContainLowercaseChars()).validate(hasCorrespondingDirectoryFileCheck) //
 										.reportAs(rootDirectoryIfMachting(cryptor)) //
 										.containing( //
 												file().that(hasName("0([A-Z2-7]{8})*[A-Z2-7=]{8}")) //
 														.validate(nameDoesNotContainLowercaseChars()) //
-														.validate(hasSize(36).and(containsUuid()).and(referencedDirectoryExists)), //
+														.validate(hasSize(36).and(containsUuid()).and(referencedDirectoryExists)) //
+														.validate(nameIsDecryptable), //
 												file().that(hasName("([A-Z2-7]{8})*[A-Z2-7=]{8}")) //
 														.validate(nameDoesNotContainLowercaseChars()) //
-														.validate(hasMinSize(88)), //
+														.validate(hasMinSize(88)) //
+														.validate(nameIsDecryptable), //
 												file().that(hasName("[A-Z2-7]{32}\\.lng").and(hasCorrespondingMFileIn(pathToVault).that(containsValidFileName()))) //
-														.validate(lngNameDoesNotContainLowercaseChars()) //
+														.validate(nameDoesNotContainLowercaseChars()) //
 														.validate(hasMinSize(88)), //
 												file().that(hasName("[A-Z2-7]{32}\\.lng").and(hasCorrespondingMFileIn(pathToVault).that(containsValidDirectoryFileName()))) //
-														.validate(lngNameDoesNotContainLowercaseChars()) //
+														.validate(nameDoesNotContainLowercaseChars()) //
 														.validate(hasSize(36).and(containsUuid()).and(referencedDirectoryExists)), //
 												file().that(hasName("[A-Z2-7]{32}\\.lng")) //
-														.validate(lngNameDoesNotContainLowercaseChars()) //
+														.validate(nameDoesNotContainLowercaseChars()) //
 														.validate(hasCorrespondingMFileIn(pathToVault)), //
 												file().that(hasName("0?([A-Z2-7]{8})*[A-Z2-7=]{1,7}")) //
 														.validate(nameDoesNotContainLowercaseChars()) //
 														.validate(hasSize(36).and(containsUuid()).and(referencedDirectoryExists)) //
+														.validate(nameIsDecryptable) //
 														.reportAs(aFileWithMissingEqualsSign()), //
-												file().that(hasName("0?([A-Z2-7]{8})*[A-Z2-7=]{8}.+")) //
+												file().that(hasName("0([A-Z2-7]{8})*[A-Z2-7=]{8}.+")) //
+														.validate(nameDoesNotContainLowercaseChars()) //
+														.validate(hasSize(36).and(containsUuid()).and(referencedDirectoryExists)) //
+														.validate(nameIsDecryptable) //
+														.reportAs(aConflict()), //
+												file().that(hasName("([A-Z2-7]{8})*[A-Z2-7=]{8}.+")) //
+														.validate(nameDoesNotContainLowercaseChars()) //
+														.validate(hasMinSize(88)) //
+														.validate(nameIsDecryptable) //
 														.reportAs(aConflict()), //
 												file().that(hasName("[A-Z2-7]{32}.+\\.lng")) //
+														.validate(nameDoesNotContainLowercaseChars()) //
+														.validate(hasCorrespondingMFileIn(pathToVault)) //
 														.reportAs(aConflict())))), //
 				dir().that(hasName("m")).validate(nameDoesNotContainUppercaseChars()).containing( //
 						dir().that(hasName("[A-Z2-7]{2}")).validate(nameDoesNotContainLowercaseChars()).containing( //
 								dir().that(hasName("[A-Z2-7]{2}")).validate(nameDoesNotContainLowercaseChars()).containing( //
 										file().that(hasName("[A-Z2-7]{32}\\.lng")) //
-												.validate(lngNameDoesNotContainLowercaseChars()) //
-												.validate(hasCorrespondingDFileIn(pathToVault).and(containsValidName())), //
+												.validate(nameDoesNotContainLowercaseChars()) //
+												.validate(hasCorrespondingDFile.and(containsValidName())), //
 										file().that(hasName("[A-Z2-7]{32}.+\\.lng")) //
+												.validate(nameDoesNotContainLowercaseChars()) //
+												.validate(hasCorrespondingDFile.and(containsValidName())) //
 												.reportAs(aConflict())))), //
 				file().that(hasName("masterkey.cryptomator")).validate(nameDoesNotContainUppercaseChars()), // do not validate contents because this already happend when creating the Cryptor
 				file().that(hasName("masterkey.cryptomator.bkup")).validate(isMasterkeyBackupFile()));

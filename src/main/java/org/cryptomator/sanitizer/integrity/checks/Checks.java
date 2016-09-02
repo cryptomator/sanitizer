@@ -5,7 +5,6 @@ import static java.nio.file.Files.readAllBytes;
 import static java.nio.file.StandardOpenOption.READ;
 import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import static org.cryptomator.sanitizer.integrity.checks.HasCorrespondingDirectoryFileCheck.ROOT_DIRECTORY_ID;
-import static org.cryptomator.sanitizer.utils.StringUtils.cutOfAtEnd;
 
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
@@ -47,28 +46,7 @@ public class Checks {
 	}
 
 	public static Check nameDoesNotContainLowercaseChars() {
-		return (problems, path) -> {
-			String filename = path.getFileName().toString();
-			for (char c : filename.toCharArray()) {
-				if (Character.isLowerCase(c)) {
-					problems.reportLowercasedFile(path);
-					return;
-				}
-			}
-		};
-	}
-
-	public static Check lngNameDoesNotContainLowercaseChars() {
-		return (problems, path) -> {
-			String filename = path.getFileName().toString();
-			String filenameWithoutLng = cutOfAtEnd(filename, ".lng");
-			for (char c : filenameWithoutLng.toCharArray()) {
-				if (Character.isLowerCase(c)) {
-					problems.reportLowercasedFile(path);
-					return;
-				}
-			}
-		};
+		return new NameDoesNotContainLowercaseCharsCheck();
 	}
 
 	public static Check nameDoesNotContainUppercaseChars() {
@@ -175,7 +153,7 @@ public class Checks {
 		return new ReferencedDirectoryExistsCheck(cryptor, pathToVault);
 	}
 
-	public static Check hasCorrespondingDirectoryFile(Cryptor cryptor, Path pathToVault) {
+	public static HasCorrespondingDirectoryFileCheck hasCorrespondingDirectoryFile(Cryptor cryptor, Path pathToVault) {
 		return new HasCorrespondingDirectoryFileCheck(cryptor, pathToVault);
 	}
 
@@ -187,6 +165,10 @@ public class Checks {
 				problems.reportRootDirectoryExists(path);
 			}
 		};
+	}
+
+	public static Check nameIsDecryptable(Cryptor cryptor, HasCorrespondingDirectoryFileCheck hasCorrespondingDirectoryFileCheck) {
+		return new NameIsDecryptableCheck(cryptor, hasCorrespondingDirectoryFileCheck);
 	}
 
 }

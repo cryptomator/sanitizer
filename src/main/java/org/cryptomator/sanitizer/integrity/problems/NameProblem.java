@@ -6,17 +6,17 @@ import java.nio.file.Path;
 
 public class NameProblem implements Problem {
 
-	private final String pattern;
+	private final String expected;
 	private final Sensitive<Path> path;
 
-	public NameProblem(String pattern, Sensitive<Path> path) {
-		this.pattern = pattern;
+	public NameProblem(String expected, Sensitive<Path> path) {
+		this.expected = expected;
 		this.path = path;
 	}
 
 	@Override
 	public String toString() {
-		return format("NameMismatch file: %s expected: %s", path, pattern);
+		return format("NameProblem file: %s expected: %s", path, expected);
 	}
 
 	@Override

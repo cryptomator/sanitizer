@@ -63,8 +63,8 @@ public class Problems {
 		report(new ConflictProblem(sensitive(path)));
 	}
 
-	public void reportNameProblem(String pattern, Path path) {
-		report(new NameProblem(pattern, sensitive(path)));
+	public void reportNameProblem(String expected, Path path) {
+		report(new NameProblem(expected, sensitive(path)));
 	}
 
 	public void reportLowercasedFile(Path path) {

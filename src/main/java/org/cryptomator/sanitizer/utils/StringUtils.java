@@ -21,4 +21,12 @@ public class StringUtils {
 		}
 	}
 
+	public static String cutOfAtStart(String start, String value) {
+		if (value.startsWith(start)) {
+			return value.substring(start.length());
+		} else {
+			return value;
+		}
+	}
+
 }

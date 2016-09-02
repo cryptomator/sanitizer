@@ -9,25 +9,26 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import org.cryptomator.cryptolib.api.Cryptor;
 import org.cryptomator.sanitizer.integrity.problems.Problems;
 
-class HasCorrespondingDirectoryFileCheck implements Check {
+public class HasCorrespondingDirectoryFileCheck implements Check {
 
 	public static final String ROOT_DIRECTORY_ID = "";
 	private final Pattern DIRECTORY_FILE_NAME_PATTERN = Pattern.compile("(0([A-Z2-7]{8})*[A-Z2-7=]{1,8})|([A-Z2-7]{32}\\.lng)", CASE_INSENSITIVE);
-	private final Set<String> referencedDirectories = new HashSet<>();
+	private final Map<String, String> hashedToCleartextDirectoryIds = new HashMap<>();
 	private boolean collectedReferencedDirectories = false;
 
 	private final Cryptor cryptor;
 	private final Path pathToVault;
 
-	public HasCorrespondingDirectoryFileCheck(Cryptor cryptor, Path pathToVault) {
+	HasCorrespondingDirectoryFileCheck(Cryptor cryptor, Path pathToVault) {
 		this.cryptor = cryptor;
 		this.pathToVault = pathToVault;
 	}
@@ -37,9 +38,13 @@ class HasCorrespondingDirectoryFileCheck implements Check {
 		collectReferencedDirectories();
 		Path relativePath = pathToVault.resolve("d").relativize(path);
 		String hashedDirectoryId = joinNamesWithoutSeparator(relativePath);
-		if (!referencedDirectories.contains(hashedDirectoryId)) {
+		if (!hashedToCleartextDirectoryIds.containsKey(hashedDirectoryId)) {
 			problems.reportOrphanDirectory(path);
 		}
+	}
+
+	public Optional<String> getCleartextId(String hashedId) {
+		return Optional.ofNullable(hashedToCleartextDirectoryIds.get(hashedId));
 	}
 
 	private String joinNamesWithoutSeparator(Path relativePath) {
@@ -51,7 +56,7 @@ class HasCorrespondingDirectoryFileCheck implements Check {
 	private void collectReferencedDirectories() throws IOException {
 		if (collectedReferencedDirectories)
 			return;
-		referencedDirectories.add(cryptor.fileNameCryptor().hashDirectoryId(ROOT_DIRECTORY_ID));
+		hashedToCleartextDirectoryIds.put(cryptor.fileNameCryptor().hashDirectoryId(ROOT_DIRECTORY_ID), "");
 		collectedReferencedDirectories = true;
 		Path dFolder = pathToVault.resolve("d");
 		Path mFolder = pathToVault.resolve("m");
@@ -81,7 +86,7 @@ class HasCorrespondingDirectoryFileCheck implements Check {
 				return;
 			String directoryId = new String(readAllBytes(file), UTF_8);
 			String hashedDirectoryId = cryptor.fileNameCryptor().hashDirectoryId(directoryId);
-			referencedDirectories.add(hashedDirectoryId);
+			hashedToCleartextDirectoryIds.put(hashedDirectoryId, directoryId);
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
 		}
