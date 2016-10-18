@@ -27,15 +27,16 @@ import static org.cryptomator.sanitizer.integrity.checks.Checks.rootDirectoryIfM
 import java.io.IOException;
 import java.nio.file.Path;
 import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.Optional;
 import java.util.Set;
 
+import org.cryptomator.cryptolib.Cryptors;
 import org.cryptomator.cryptolib.api.Cryptor;
 import org.cryptomator.cryptolib.api.CryptorProvider;
 import org.cryptomator.cryptolib.api.InvalidPassphraseException;
 import org.cryptomator.cryptolib.api.KeyFile;
-import org.cryptomator.cryptolib.v1.CryptorProviderImpl;
-import org.cryptomator.sanitizer.Csprng;
 import org.cryptomator.sanitizer.integrity.checks.Check;
 import org.cryptomator.sanitizer.integrity.checks.HasCorrespondingDirectoryFileCheck;
 import org.cryptomator.sanitizer.integrity.problems.Problem;
@@ -48,7 +49,11 @@ public class IntegrityCheck {
 	private final CryptorProvider cryptorProvider;
 
 	public IntegrityCheck() {
-		this.cryptorProvider = new CryptorProviderImpl(Csprng.INSTANCE);
+		try {
+			this.cryptorProvider = Cryptors.version1(SecureRandom.getInstanceStrong());
+		} catch (NoSuchAlgorithmException e) {
+			throw new IllegalStateException("Java platform is required to support a strong SecureRandom.", e);
+		}
 	}
 
 	public Set<Problem> check(Path path, CharSequence passphrase) throws AbortCheckException {

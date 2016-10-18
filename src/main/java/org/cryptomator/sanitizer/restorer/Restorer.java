@@ -10,13 +10,14 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.Arrays;
 
 import org.cryptomator.cryptolib.Cryptors;
 import org.cryptomator.cryptolib.api.Cryptor;
 import org.cryptomator.cryptolib.api.CryptorProvider;
 import org.cryptomator.cryptolib.api.KeyFile;
-import org.cryptomator.sanitizer.Csprng;
 
 public class Restorer {
 
@@ -82,9 +83,17 @@ public class Restorer {
 		case 2:
 		case 3:
 		case 4:
-			return Cryptors.version1(Csprng.INSTANCE);
+			return Cryptors.version1(strongSecureRandom());
 		default:
 			throw new IllegalArgumentException("Unsupported vault version " + keyFile.getVersion());
+		}
+	}
+
+	private static SecureRandom strongSecureRandom() {
+		try {
+			return SecureRandom.getInstanceStrong();
+		} catch (NoSuchAlgorithmException e) {
+			throw new IllegalStateException("Java platform is required to support a strong SecureRandom.", e);
 		}
 	}
 
