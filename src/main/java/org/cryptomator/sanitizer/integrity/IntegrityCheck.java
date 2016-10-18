@@ -23,6 +23,7 @@ import static org.cryptomator.sanitizer.integrity.checks.Checks.nameDoesNotConta
 import static org.cryptomator.sanitizer.integrity.checks.Checks.nameIsDecryptable;
 import static org.cryptomator.sanitizer.integrity.checks.Checks.referencedDirectoryExists;
 import static org.cryptomator.sanitizer.integrity.checks.Checks.rootDirectoryIfMachting;
+import static org.cryptomator.sanitizer.integrity.checks.Checks.startsWithAuthenticHeader;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -118,11 +119,11 @@ public class IntegrityCheck {
 														.validate(nameIsDecryptable), //
 												file().that(hasName("([A-Z2-7]{8})*[A-Z2-7=]{8}")) //
 														.validate(nameDoesNotContainLowercaseChars()) //
-														.validate(hasMinSize(88)) //
+														.validate(hasMinSize(88).and(startsWithAuthenticHeader(cryptor))) //
 														.validate(nameIsDecryptable), //
 												file().that(hasName("[A-Z2-7]{32}\\.lng").and(hasCorrespondingMFileIn(pathToVault).that(containsValidFileName()))) //
 														.validate(nameDoesNotContainLowercaseChars()) //
-														.validate(hasMinSize(88)), //
+														.validate(hasMinSize(88).and(startsWithAuthenticHeader(cryptor))), //
 												file().that(hasName("[A-Z2-7]{32}\\.lng").and(hasCorrespondingMFileIn(pathToVault).that(containsValidDirectoryFileName()))) //
 														.validate(nameDoesNotContainLowercaseChars()) //
 														.validate(hasSize(36).and(containsUuid()).and(referencedDirectoryExists)), //
@@ -141,7 +142,7 @@ public class IntegrityCheck {
 														.reportAs(aConflict()), //
 												file().that(hasName("([A-Z2-7]{8})*[A-Z2-7=]{8}.+")) //
 														.validate(nameDoesNotContainLowercaseChars()) //
-														.validate(hasMinSize(88)) //
+														.validate(hasMinSize(88).and(startsWithAuthenticHeader(cryptor))) //
 														.validate(nameIsDecryptable) //
 														.reportAs(aConflict()), //
 												file().that(hasName("[A-Z2-7]{32}.+\\.lng")) //

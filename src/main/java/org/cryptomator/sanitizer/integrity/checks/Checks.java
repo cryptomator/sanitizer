@@ -8,10 +8,12 @@ import static org.cryptomator.sanitizer.integrity.checks.HasCorrespondingDirecto
 
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.regex.Pattern;
 
+import org.cryptomator.cryptolib.api.AuthenticationFailedException;
 import org.cryptomator.cryptolib.api.Cryptor;
 import org.cryptomator.cryptolib.api.KeyFile;
 
@@ -107,6 +109,25 @@ public class Checks {
 			String uuid = new String(bytes.array(), UTF_8);
 			if (!uuid.matches("[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}")) {
 				problems.reportFileContentProblem(path, "a uuid", uuid);
+			}
+		};
+	}
+
+	public static Check startsWithAuthenticHeader(Cryptor cryptor) {
+		return (problems, path) -> {
+			ByteBuffer bytes = ByteBuffer.allocate(88);
+			try (ReadableByteChannel in = FileChannel.open(path, READ)) {
+				int read = in.read(bytes);
+				if (read != 88) {
+					problems.reportSizeMismatch(path, "at least 88 bytes", read);
+					return;
+				}
+			}
+			bytes.flip();
+			try {
+				cryptor.fileHeaderCryptor().decryptHeader(bytes);
+			} catch (AuthenticationFailedException e) {
+				problems.reportUnauthenticFileHeader(path);
 			}
 		};
 	}

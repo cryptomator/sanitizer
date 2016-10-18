@@ -47,8 +47,12 @@ public class Problems {
 		report(new SuspectFileProblem(sensitive(child)));
 	}
 
+	public void reportUnauthenticFileHeader(Path path) {
+		report(new FileHeaderUnauthenticProblem(sensitive(path)));
+	}
+
 	public void reportFileContentProblem(Path path, String expected, String actual) {
-		report(new FileContentProblem(sensitive(path), expected, actual));
+		report(new FileContentMismatchProblem(sensitive(path), expected, actual));
 	}
 
 	public void reportSizeMismatch(Path path, String expectedSize, long actualSize) {
