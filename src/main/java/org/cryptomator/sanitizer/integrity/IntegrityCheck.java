@@ -17,13 +17,13 @@ import static org.cryptomator.sanitizer.integrity.checks.Checks.hasCorresponding
 import static org.cryptomator.sanitizer.integrity.checks.Checks.hasMinSize;
 import static org.cryptomator.sanitizer.integrity.checks.Checks.hasName;
 import static org.cryptomator.sanitizer.integrity.checks.Checks.hasSize;
+import static org.cryptomator.sanitizer.integrity.checks.Checks.isAuthentic;
 import static org.cryptomator.sanitizer.integrity.checks.Checks.isMasterkeyBackupFile;
 import static org.cryptomator.sanitizer.integrity.checks.Checks.nameDoesNotContainLowercaseChars;
 import static org.cryptomator.sanitizer.integrity.checks.Checks.nameDoesNotContainUppercaseChars;
 import static org.cryptomator.sanitizer.integrity.checks.Checks.nameIsDecryptable;
 import static org.cryptomator.sanitizer.integrity.checks.Checks.referencedDirectoryExists;
 import static org.cryptomator.sanitizer.integrity.checks.Checks.rootDirectoryIfMachting;
-import static org.cryptomator.sanitizer.integrity.checks.Checks.startsWithAuthenticHeader;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -57,12 +57,12 @@ public class IntegrityCheck {
 		}
 	}
 
-	public Set<Problem> check(Path path, CharSequence passphrase) throws AbortCheckException {
+	public Set<Problem> check(Path path, CharSequence passphrase, boolean checkFileIntegrity) throws AbortCheckException {
 		Problems problems = new Problems(path);
 		try {
 			createCryptor(problems, path, passphrase).ifPresent(cryptor -> {
 				try {
-					vaultFormatChecks(cryptor, path).check(problems, path);
+					vaultFormatChecks(cryptor, path, checkFileIntegrity).check(problems, path);
 				} finally {
 					cryptor.destroy();
 				}
@@ -101,7 +101,7 @@ public class IntegrityCheck {
 		return Optional.empty();
 	}
 
-	private Check vaultFormatChecks(Cryptor cryptor, Path pathToVault) {
+	private Check vaultFormatChecks(Cryptor cryptor, Path pathToVault, boolean checkContentIntegrity) {
 		Check referencedDirectoryExists = referencedDirectoryExists(cryptor, pathToVault);
 		HasCorrespondingDirectoryFileCheck hasCorrespondingDirectoryFileCheck = hasCorrespondingDirectoryFile(cryptor, pathToVault);
 		Check nameIsDecryptable = nameIsDecryptable(cryptor, hasCorrespondingDirectoryFileCheck);
@@ -119,11 +119,11 @@ public class IntegrityCheck {
 														.validate(nameIsDecryptable), //
 												file().that(hasName("([A-Z2-7]{8})*[A-Z2-7=]{8}")) //
 														.validate(nameDoesNotContainLowercaseChars()) //
-														.validate(hasMinSize(88).and(startsWithAuthenticHeader(cryptor))) //
+														.validate(hasMinSize(88).and(isAuthentic(cryptor, checkContentIntegrity))) //
 														.validate(nameIsDecryptable), //
 												file().that(hasName("[A-Z2-7]{32}\\.lng").and(hasCorrespondingMFileIn(pathToVault).that(containsValidFileName()))) //
 														.validate(nameDoesNotContainLowercaseChars()) //
-														.validate(hasMinSize(88).and(startsWithAuthenticHeader(cryptor))), //
+														.validate(hasMinSize(88).and(isAuthentic(cryptor, checkContentIntegrity))), //
 												file().that(hasName("[A-Z2-7]{32}\\.lng").and(hasCorrespondingMFileIn(pathToVault).that(containsValidDirectoryFileName()))) //
 														.validate(nameDoesNotContainLowercaseChars()) //
 														.validate(hasSize(36).and(containsUuid()).and(referencedDirectoryExists)), //
@@ -142,7 +142,7 @@ public class IntegrityCheck {
 														.reportAs(aConflict()), //
 												file().that(hasName("([A-Z2-7]{8})*[A-Z2-7=]{8}.+")) //
 														.validate(nameDoesNotContainLowercaseChars()) //
-														.validate(hasMinSize(88).and(startsWithAuthenticHeader(cryptor))) //
+														.validate(hasMinSize(88).and(isAuthentic(cryptor, checkContentIntegrity))) //
 														.validate(nameIsDecryptable) //
 														.reportAs(aConflict()), //
 												file().that(hasName("[A-Z2-7]{32}.+\\.lng")) //

@@ -51,6 +51,10 @@ public class Problems {
 		report(new FileHeaderUnauthenticProblem(sensitive(path)));
 	}
 
+	public void reportUnauthenticFileContent(Path path, long chunkNumber) {
+		report(new FileContentUnauthenticProblem(sensitive(path), chunkNumber));
+	}
+
 	public void reportFileContentProblem(Path path, String expected, String actual) {
 		report(new FileContentMismatchProblem(sensitive(path), expected, actual));
 	}

@@ -15,6 +15,7 @@ import java.util.regex.Pattern;
 
 import org.cryptomator.cryptolib.api.AuthenticationFailedException;
 import org.cryptomator.cryptolib.api.Cryptor;
+import org.cryptomator.cryptolib.api.FileHeader;
 import org.cryptomator.cryptolib.api.KeyFile;
 
 public class Checks {
@@ -113,21 +114,36 @@ public class Checks {
 		};
 	}
 
-	public static Check startsWithAuthenticHeader(Cryptor cryptor) {
+	public static Check isAuthentic(Cryptor cryptor, boolean alsoCheckContent) {
 		return (problems, path) -> {
-			ByteBuffer bytes = ByteBuffer.allocate(88);
+			ByteBuffer headerBuf = ByteBuffer.allocate(cryptor.fileHeaderCryptor().headerSize());
+			ByteBuffer contentBuf = ByteBuffer.allocate(cryptor.fileContentCryptor().ciphertextChunkSize());
 			try (ReadableByteChannel in = FileChannel.open(path, READ)) {
-				int read = in.read(bytes);
-				if (read != 88) {
+				int read = in.read(headerBuf);
+				if (read != cryptor.fileHeaderCryptor().headerSize()) {
 					problems.reportSizeMismatch(path, "at least 88 bytes", read);
 					return;
 				}
-			}
-			bytes.flip();
-			try {
-				cryptor.fileHeaderCryptor().decryptHeader(bytes);
-			} catch (AuthenticationFailedException e) {
-				problems.reportUnauthenticFileHeader(path);
+				headerBuf.flip();
+				final FileHeader header;
+				try {
+					header = cryptor.fileHeaderCryptor().decryptHeader(headerBuf);
+				} catch (AuthenticationFailedException e) {
+					problems.reportUnauthenticFileHeader(path);
+					return;
+				}
+
+				long chunkNumber = 0;
+				while (alsoCheckContent && (read = in.read(contentBuf)) > 0) {
+					contentBuf.flip();
+					try {
+						cryptor.fileContentCryptor().decryptChunk(contentBuf, chunkNumber, header, true);
+					} catch (AuthenticationFailedException e) {
+						problems.reportUnauthenticFileContent(path, chunkNumber);
+					}
+					contentBuf.clear();
+					chunkNumber++;
+				}
 			}
 		};
 	}

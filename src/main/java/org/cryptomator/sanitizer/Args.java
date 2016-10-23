@@ -37,7 +37,7 @@ import org.cryptomator.sanitizer.integrity.AbortCheckException;
 
 public class Args {
 
-	private static final String USAGE = "java -jar sanitizer-" + Version.get() + ".jar -vault vaultToCheck [-passphraseFile passphraseFile] [-solve enabledSolution ...] [-output outputPrefix]";
+	private static final String USAGE = "java -jar sanitizer-" + Version.get() + ".jar -vault vaultToCheck [-passphraseFile passphraseFile] [-deep] [-solve enabledSolution ...] [-output outputPrefix]";
 	private static final String HEADER = "\nDetects problems in Cryptomator vaults.\n\n";
 	private static final Options OPTIONS = new Options();
 	private static final Set<String> ALLOWED_PROBLEMS_TO_SOLVE = new HashSet<>(asList("LowercasedFile", "MissingEqualsSign", "OrphanMFile", "UppercasedFile"));
@@ -48,6 +48,11 @@ public class Args {
 				.argName("vaultPath") //
 				.desc("The vault to check.") //
 				.required() //
+				.build());
+		OPTIONS.addOption(Option.builder() //
+				.longOpt("deep") //
+				.argName("deepMode") //
+				.desc("Also checks file content integrity (might take several minutes).") //
 				.build());
 		OPTIONS.addOption(Option.builder() //
 				.longOpt("passphrase") //
@@ -81,6 +86,7 @@ public class Args {
 	private final Path vaultLocation;
 	private CharBuffer passphrase;
 	private final Set<String> problemsToSolve;
+	private final boolean checkFileIntegrity;
 
 	private Path checkOutputFile;
 	private Path structureOutputFile;
@@ -89,6 +95,7 @@ public class Args {
 		this.vaultLocation = vaultLocation(commandLine);
 		this.passphrase = passphrase(commandLine);
 		this.problemsToSolve = problemsToSolve(commandLine);
+		this.checkFileIntegrity = commandLine.hasOption("deep");
 		setOutputFiles(commandLine);
 	}
 
@@ -164,6 +171,10 @@ public class Args {
 			passphrase = readPassphrase();
 		}
 		return passphrase;
+	}
+
+	public boolean checkFileIntegrity() {
+		return checkFileIntegrity;
 	}
 
 	private CharBuffer readPassphrase() throws AbortCheckException {

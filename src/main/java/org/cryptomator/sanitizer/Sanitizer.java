@@ -49,7 +49,7 @@ public class Sanitizer {
 			writeStructureToOutput(args, args.vaultLocation());
 			System.out.println("Checking the vault may take some time. Be patient...");
 			System.out.println();
-			Set<Problem> problems = integrityCheck.check(args.vaultLocation(), passphrase);
+			Set<Problem> problems = integrityCheck.check(args.vaultLocation(), passphrase, args.checkFileIntegrity());
 			writeResultsToConsole(args, problems);
 			writeProblemsToOutput(args, problems);
 			List<Problem> problemsToSolve = problems.stream() //
