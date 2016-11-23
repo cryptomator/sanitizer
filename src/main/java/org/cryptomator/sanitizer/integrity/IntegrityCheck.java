@@ -45,7 +45,7 @@ import org.cryptomator.sanitizer.integrity.problems.Problems;
 
 public class IntegrityCheck {
 
-	private static final int VAULT_VERSION = 4;
+	private static final int VAULT_VERSION = 5;
 
 	private final CryptorProvider cryptorProvider;
 

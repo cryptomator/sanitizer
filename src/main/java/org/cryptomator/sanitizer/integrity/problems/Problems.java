@@ -150,4 +150,8 @@ public class Problems {
 		};
 	}
 
+	public void reportFileSizeInHeader(Path path) {
+		report(new FileSizeInHeaderProblem(sensitive(path)));
+	}
+
 }
