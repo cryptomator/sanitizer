@@ -10,6 +10,7 @@ import static org.cryptomator.sanitizer.integrity.checks.Checks.containsValidDir
 import static org.cryptomator.sanitizer.integrity.checks.Checks.containsValidFileName;
 import static org.cryptomator.sanitizer.integrity.checks.Checks.containsValidName;
 import static org.cryptomator.sanitizer.integrity.checks.Checks.dir;
+import static org.cryptomator.sanitizer.integrity.checks.Checks.emptyEncryptedFileIfEmpty;
 import static org.cryptomator.sanitizer.integrity.checks.Checks.file;
 import static org.cryptomator.sanitizer.integrity.checks.Checks.hasCorrespondingDFileIn;
 import static org.cryptomator.sanitizer.integrity.checks.Checks.hasCorrespondingDirectoryFile;
@@ -106,6 +107,7 @@ public class IntegrityCheck {
 		HasCorrespondingDirectoryFileCheck hasCorrespondingDirectoryFileCheck = hasCorrespondingDirectoryFile(cryptor, pathToVault);
 		Check nameIsDecryptable = nameIsDecryptable(cryptor, hasCorrespondingDirectoryFileCheck);
 		Check hasCorrespondingDFile = hasCorrespondingDFileIn(pathToVault);
+		Check emptyEncryptedFileIfEmpty = emptyEncryptedFileIfEmpty();
 		return dir().containing( //
 				dir().that(hasName("d")).validate(nameDoesNotContainUppercaseChars()).containing( //
 						dir().that(hasName("[A-Z2-7]{2}")).validate(nameDoesNotContainLowercaseChars()).containing( //
@@ -118,10 +120,12 @@ public class IntegrityCheck {
 														.validate(hasSize(36).and(containsUuid()).and(referencedDirectoryExists)) //
 														.validate(nameIsDecryptable), //
 												file().that(hasName("([A-Z2-7]{8})*[A-Z2-7=]{8}")) //
+														.reportAs(emptyEncryptedFileIfEmpty) //
 														.validate(nameDoesNotContainLowercaseChars()) //
 														.validate(hasMinSize(88).and(isAuthentic(cryptor, checkContentIntegrity))) //
 														.validate(nameIsDecryptable), //
 												file().that(hasName("[A-Z2-7]{32}\\.lng").and(hasCorrespondingMFileIn(pathToVault).that(containsValidFileName()))) //
+														.reportAs(emptyEncryptedFileIfEmpty) //
 														.validate(nameDoesNotContainLowercaseChars()) //
 														.validate(hasMinSize(88).and(isAuthentic(cryptor, checkContentIntegrity))), //
 												file().that(hasName("[A-Z2-7]{32}\\.lng").and(hasCorrespondingMFileIn(pathToVault).that(containsValidDirectoryFileName()))) //
@@ -141,6 +145,7 @@ public class IntegrityCheck {
 														.validate(nameIsDecryptable) //
 														.reportAs(aConflict()), //
 												file().that(hasName("([A-Z2-7]{8})*[A-Z2-7=]{8}.+")) //
+														.reportAs(emptyEncryptedFileIfEmpty) //
 														.validate(nameDoesNotContainLowercaseChars()) //
 														.validate(hasMinSize(88).and(isAuthentic(cryptor, checkContentIntegrity))) //
 														.validate(nameIsDecryptable) //
@@ -159,7 +164,7 @@ public class IntegrityCheck {
 												.validate(nameDoesNotContainLowercaseChars()) //
 												.validate(hasCorrespondingDFile.and(containsValidName())) //
 												.reportAs(aConflict())))), //
-				file().that(hasName("masterkey.cryptomator")).validate(nameDoesNotContainUppercaseChars()), // do not validate contents because this already happend when creating the Cryptor
+				file().that(hasName("masterkey.cryptomator")).validate(nameDoesNotContainUppercaseChars()), // do not validate contents because this already happened when creating the Cryptor
 				file().that(hasName("masterkey.cryptomator.bkup")).validate(isMasterkeyBackupFile()));
 	}
 

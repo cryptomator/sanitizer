@@ -4,11 +4,11 @@ import static java.lang.String.format;
 
 import java.nio.file.Path;
 
-class RootDirectoryInfo implements Problem {
+class EmptyEncryptedFileInfo implements Problem {
 
 	private final Sensitive<Path> path;
 
-	public RootDirectoryInfo(Sensitive<Path> path) {
+	public EmptyEncryptedFileInfo(Sensitive<Path> path) {
 		this.path = path;
 	}
 
@@ -19,7 +19,7 @@ class RootDirectoryInfo implements Problem {
 
 	@Override
 	public String toString() {
-		return format("RootExists %s", path);
+		return format("EmptyEncryptedFile %s", path);
 	}
 
 }
