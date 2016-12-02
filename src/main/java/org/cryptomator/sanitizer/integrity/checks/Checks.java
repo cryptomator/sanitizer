@@ -19,14 +19,6 @@ public class Checks {
 
 	static final long MAX_NAME_LENGTH = 10000;
 
-	public static CompoundFileCheck requiredFile(String name) {
-		return new CompoundFileCheck(name);
-	}
-
-	public static CompoundDirectoryCheck requiredDir(String name) {
-		return new CompoundDirectoryCheck(name);
-	}
-
 	public static CompoundFileCheck file() {
 		return new CompoundFileCheck();
 	}
@@ -127,8 +119,17 @@ public class Checks {
 	public static Check hasMinSize(long minSize) {
 		return (problems, path) -> {
 			long fileSize = Files.size(path);
-			if (fileSize <= minSize) {
-				problems.reportSizeMismatch(path, "> " + minSize, fileSize);
+			if (fileSize < minSize) {
+				problems.reportSizeMismatch(path, ">= " + minSize, fileSize);
+			}
+		};
+	}
+
+	public static Check emptyEncryptedFileIfEmpty() {
+		return (problems, path) -> {
+			long fileSize = Files.size(path);
+			if (fileSize == 88) {
+				problems.reportEmptyEncryptedFile(path);
 			}
 		};
 	}

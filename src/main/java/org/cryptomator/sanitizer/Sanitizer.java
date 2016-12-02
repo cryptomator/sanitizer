@@ -29,6 +29,7 @@ import org.cryptomator.sanitizer.integrity.IntegrityCheck;
 import org.cryptomator.sanitizer.integrity.problems.Problem;
 import org.cryptomator.sanitizer.integrity.problems.Severity;
 import org.cryptomator.sanitizer.integrity.problems.SolutionContext;
+import org.cryptomator.sanitizer.utils.Counter;
 
 public class Sanitizer {
 
@@ -73,13 +74,16 @@ public class Sanitizer {
 	}
 
 	private static void writeStructureToOutput(Args args, Path vaultLocation) {
+		Counter counter = new Counter();
 		try (PrintWriter writer = new PrintWriter(newBufferedWriter(args.structureOutputFile(), UTF_8, CREATE_NEW, WRITE)); //
 				Stream<Path> vaultContents = walk(vaultLocation)) {
-			vaultContents.forEach(writePathToOutput(args, writer));
+			vaultContents.forEach(writePathToOutput(args, writer) //
+					.andThen(ignored -> counter.increment()));
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
 		}
 		System.out.println("Wrote structure to " + args.structureOutputFile() + ".");
+		System.out.println(counter.get() + " files in vault");
 		System.out.println();
 	}
 

@@ -115,6 +115,10 @@ public class Problems {
 		report(new RootDirectoryInfo(sensitive(path)));
 	}
 
+	public void reportEmptyEncryptedFile(Path path) {
+		report(new EmptyEncryptedFileInfo(sensitive(path)));
+	}
+
 	private Sensitive<Exception> sensitive(Exception e) {
 		return new Sensitive<Exception>() {
 			@Override
