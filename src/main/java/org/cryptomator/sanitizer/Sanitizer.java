@@ -33,7 +33,8 @@ import org.cryptomator.sanitizer.utils.Counter;
 
 public class Sanitizer {
 
-	private static final long PRINT_SIZE_TRESHOLD = 300;
+	private static final long KIBI = 1024;
+	private static final String[] KIBI_POWERS = {"B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"};
 
 	public static void main(String[] stringArgs) {
 		System.out.println("# Cryptomator vault sanitizer v" + Version.get() + " #");
@@ -94,7 +95,7 @@ public class Sanitizer {
 				if (isDirectory(path)) {
 					writer.println(format("d %s", relativePath));
 				} else if (isRegularFile(path)) {
-					writer.println(format("f %s %s", relativePath, applySizeTrehsold(size(path))));
+					writer.println(format("f %s %s", relativePath, obfuscateSize(size(path))));
 				} else {
 					writer.println(format("? %s", relativePath));
 				}
@@ -104,11 +105,16 @@ public class Sanitizer {
 		};
 	}
 
-	private static String applySizeTrehsold(long size) {
-		if (size < PRINT_SIZE_TRESHOLD) {
-			return Long.toString(size);
+	private static String obfuscateSize(long size) {
+		int i = 0;
+		while (i < 8 && size > KIBI) {
+			size = size / KIBI;
+			i++;
+		}
+		if (i == 0) {
+			return size + " " + KIBI_POWERS[i];
 		} else {
-			return ">" + PRINT_SIZE_TRESHOLD;
+			return "~" + size + " " + KIBI_POWERS[i];
 		}
 	}
 
