@@ -16,7 +16,6 @@ import static org.cryptomator.sanitizer.integrity.problems.Severity.INFO;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UncheckedIOException;
-import java.nio.CharBuffer;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,11 +23,13 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import org.cryptomator.cryptolib.api.InvalidPassphraseException;
 import org.cryptomator.sanitizer.integrity.AbortCheckException;
 import org.cryptomator.sanitizer.integrity.IntegrityCheck;
 import org.cryptomator.sanitizer.integrity.problems.Problem;
 import org.cryptomator.sanitizer.integrity.problems.Severity;
 import org.cryptomator.sanitizer.integrity.problems.SolutionContext;
+import org.cryptomator.sanitizer.restorer.PathEncryptor;
 import org.cryptomator.sanitizer.utils.Counter;
 
 public class Sanitizer {
@@ -43,34 +44,60 @@ public class Sanitizer {
 	}
 
 	public static void main(Args args) {
+		switch (args.command().toLowerCase()) {
+		case "check":
+		case "deepcheck":
+		case "solve":
+			integrityCheck(args, "deepCheck".equalsIgnoreCase(args.command()), "solve".equalsIgnoreCase(args.command()));
+			break;
+		case "encryptpath":
+			encryptPath(args);
+			break;
+		default:
+			System.err.println("Unknown command");
+			Args.printUsage();
+		}
+	}
+
+	private static void integrityCheck(Args args, boolean deepCheck, boolean solve) {
 		IntegrityCheck integrityCheck = new IntegrityCheck();
-		CharBuffer passphrase = null;
-		try {
-			passphrase = args.passphrase();
+		try (Passphrase passphrase = args.passphrase()) {
 			System.out.println("Scanning vault structure may take some time. Be patient...");
 			writeStructureToOutput(args, args.vaultLocation());
 			System.out.println("Checking the vault may take some time. Be patient...");
 			System.out.println();
-			Set<Problem> problems = integrityCheck.check(args.vaultLocation(), passphrase, args.checkFileIntegrity());
+			Set<Problem> problems = integrityCheck.check(args.vaultLocation(), passphrase, deepCheck);
 			writeResultsToConsole(args, problems);
 			writeProblemsToOutput(args, problems);
-			List<Problem> problemsToSolve = problems.stream() //
-					.filter(problem -> args.problemsToSolve().contains(problem.name())) //
-					.collect(toList());
-			if (!problemsToSolve.isEmpty()) {
-				System.out.println();
-				System.out.println("Solving problems. This may take some time. Be patient...");
-				System.out.println();
-				SolutionContext context = SolutionContext.executePrintingTo(args.vaultLocation(), System.out);
-				problemsToSolve.forEach(problem -> problem.solution().ifPresent(solution -> solution.execute(context)));
+			if (solve) {
+				List<Problem> problemsToSolve = problems.stream() //
+						.filter(problem -> args.problemsToSolve().contains(problem.name())) //
+						.collect(toList());
+				if (!problemsToSolve.isEmpty()) {
+					System.out.println();
+					System.out.println("Solving problems. This may take some time. Be patient...");
+					System.out.println();
+					SolutionContext context = SolutionContext.executePrintingTo(args.vaultLocation(), System.out);
+					problemsToSolve.forEach(problem -> problem.solution().ifPresent(solution -> solution.execute(context)));
+				}
 			}
 			System.out.println();
 			System.out.println("Done.");
 		} catch (AbortCheckException e) {
 			System.err.print("Check failed: ");
 			System.err.println(e.getMessage());
-		} finally {
-			clear(passphrase);
+		}
+	}
+
+	private static void encryptPath(Args args) {
+		try (Passphrase passphrase = args.passphrase()) {
+			PathEncryptor.encryptPath(args.vaultLocation(), passphrase);
+		} catch (InvalidPassphraseException e) {
+			System.err.println("Invalid passphrase.");
+		} catch (AbortCheckException e) {
+			System.err.println(e.getMessage());
+		} catch (IOException e) {
+			System.err.println(e.getMessage());
 		}
 	}
 
@@ -155,14 +182,4 @@ public class Sanitizer {
 	private static long countProblems(Set<Problem> problems) {
 		return problems.stream().filter(problem -> problem.severity() != INFO).count();
 	}
-
-	private static void clear(CharBuffer passphrase) {
-		if (passphrase == null)
-			return;
-		passphrase.clear();
-		while (passphrase.hasRemaining()) {
-			passphrase.put('\0');
-		}
-	}
-
 }

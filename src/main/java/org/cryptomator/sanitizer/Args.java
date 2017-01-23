@@ -2,26 +2,26 @@ package org.cryptomator.sanitizer;
 
 import static java.lang.String.format;
 import static java.lang.String.join;
-import static java.nio.charset.Charset.defaultCharset;
 import static java.nio.file.Files.deleteIfExists;
 import static java.nio.file.Files.exists;
 import static java.nio.file.Files.isDirectory;
 import static java.nio.file.Files.isReadable;
 import static java.nio.file.Files.isRegularFile;
 import static java.util.Arrays.asList;
-import static java.util.Arrays.fill;
 
 import java.io.BufferedReader;
 import java.io.Console;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.io.UncheckedIOException;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Optional;
@@ -37,7 +37,13 @@ import org.cryptomator.sanitizer.integrity.AbortCheckException;
 
 public class Args {
 
-	private static final String USAGE = "java -jar sanitizer-" + Version.get() + ".jar -vault vaultToCheck [-passphraseFile passphraseFile] [-deep] [-solve enabledSolution ...] [-output outputPrefix]";
+	private static final String[] COMMANDS = new String[] {"check", "deepCheck", "solve", "encryptPath"};
+	private static final String USAGE = "java -jar sanitizer-" + Version.get() + ".jar" //
+			+ " -vault vaultToCheck" //
+			+ " -cmd " + org.apache.commons.lang3.StringUtils.join(COMMANDS, '|') //
+			+ " [-passphraseFile passphraseFile]" //
+			+ " [-solve enabledSolution ...]" //
+			+ " [-output outputPrefix]";
 	private static final String HEADER = "\nDetects problems in Cryptomator vaults.\n\n";
 	private static final Options OPTIONS = new Options();
 	private static final Set<String> ALLOWED_PROBLEMS_TO_SOLVE = new HashSet<>(asList("LowercasedFile", "MissingEqualsSign", "OrphanMFile", "UppercasedFile"));
@@ -46,13 +52,15 @@ public class Args {
 				.longOpt("vault") //
 				.hasArg() //
 				.argName("vaultPath") //
-				.desc("The vault to check.") //
+				.desc("On which vault to work.") //
 				.required() //
 				.build());
 		OPTIONS.addOption(Option.builder() //
-				.longOpt("deep") //
-				.argName("deepMode") //
-				.desc("Also checks file content integrity (might take several minutes).") //
+				.longOpt("cmd") //
+				.hasArg() //
+				.argName("command") //
+				.desc("What to do (" + org.apache.commons.lang3.StringUtils.join(COMMANDS, ',') + ")") //
+				.required() //
 				.build());
 		OPTIONS.addOption(Option.builder() //
 				.longOpt("passphrase") //
@@ -84,18 +92,18 @@ public class Args {
 	}
 
 	private final Path vaultLocation;
-	private CharBuffer passphrase;
+	private final String command;
+	private Passphrase passphrase;
 	private final Set<String> problemsToSolve;
-	private final boolean checkFileIntegrity;
 
 	private Path checkOutputFile;
 	private Path structureOutputFile;
 
 	public Args(CommandLine commandLine) throws ParseException {
 		this.vaultLocation = vaultLocation(commandLine);
+		this.command = commandLine.getOptionValue("cmd");
 		this.passphrase = passphrase(commandLine);
 		this.problemsToSolve = problemsToSolve(commandLine);
-		this.checkFileIntegrity = commandLine.hasOption("deep");
 		setOutputFiles(commandLine);
 	}
 
@@ -114,14 +122,14 @@ public class Args {
 		}
 	}
 
-	private CharBuffer passphrase(CommandLine commandLine) throws ParseException {
+	private Passphrase passphrase(CommandLine commandLine) throws ParseException {
 		String value = commandLine.getOptionValue("passphrase");
 		String file = commandLine.getOptionValue("passphraseFile");
 		if (value != null && file != null) {
 			throw new ParseException("Only passphrase or passphraseFile can be present, not both.");
 		}
 		if (value != null) {
-			return CharBuffer.wrap(value.toCharArray());
+			return new Passphrase(value.toCharArray());
 		}
 		if (file != null) {
 			return passphraseFromFile(file);
@@ -129,7 +137,7 @@ public class Args {
 		return null;
 	}
 
-	private CharBuffer passphraseFromFile(String file) throws ParseException {
+	private Passphrase passphraseFromFile(String file) throws ParseException {
 		Path path;
 		try {
 			path = Paths.get(file);
@@ -143,12 +151,20 @@ public class Args {
 			throw new ParseException("Passphrase file not readable");
 		}
 		try {
-			byte[] bytes = Files.readAllBytes(path);
-			CharBuffer result = CharBuffer.allocate(bytes.length);
-			defaultCharset().newDecoder().decode(ByteBuffer.wrap(bytes), result, true);
-			fill(bytes, (byte) 0);
-			result.flip();
-			return result;
+			long pwFileSize = Files.size(path);
+			if (pwFileSize > Integer.MAX_VALUE) {
+				throw new ParseException("Invalid passphrase file");
+			}
+			assert pwFileSize <= Integer.MAX_VALUE;
+			char[] chars = new char[(int) pwFileSize];
+			try (InputStream in = Files.newInputStream(path, StandardOpenOption.READ); //
+					Reader reader = new InputStreamReader(in, StandardCharsets.UTF_8)) {
+				int off = 0, read;
+				while ((read = reader.read(chars, off, 1024)) != -1) {
+					off += read;
+				}
+			}
+			return new Passphrase(chars);
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
 		}
@@ -162,27 +178,27 @@ public class Args {
 		return vaultLocation;
 	}
 
-	public Optional<CharBuffer> passphraseIfRead() {
+	public Optional<Passphrase> passphraseIfRead() {
 		return Optional.ofNullable(passphrase);
 	}
 
-	public CharBuffer passphrase() throws AbortCheckException {
+	public String command() {
+		return command;
+	}
+
+	public Passphrase passphrase() throws AbortCheckException {
 		if (passphrase == null) {
 			passphrase = readPassphrase();
 		}
 		return passphrase;
 	}
 
-	public boolean checkFileIntegrity() {
-		return checkFileIntegrity;
-	}
-
-	private CharBuffer readPassphrase() throws AbortCheckException {
+	private Passphrase readPassphrase() throws AbortCheckException {
 		Console console = System.console();
 		if (console == null) {
 			throw new AbortCheckException("Could not get system console to read passphrase. You may use a passphrase file instead.");
 		}
-		return CharBuffer.wrap(console.readPassword("Vault password: "));
+		return new Passphrase(console.readPassword("Vault password: "));
 	}
 
 	public Path structureOutputFile() {
