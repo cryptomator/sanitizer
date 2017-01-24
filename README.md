@@ -5,12 +5,16 @@
 ## Usage
 
 ```
-java -jar sanitizer-0.1.jar -vault vaultToCheck [-passphraseFile
+usage: java -jar sanitizer-x.y.jar -vault vaultToCheck -cmd
+            check|deepCheck|solve|encryptPath [-passphraseFile
             passphraseFile] [-solve enabledSolution ...] [-output
             outputPrefix]
 
 Detects problems in Cryptomator vaults.
 
+    --cmd <command>                     What to do
+                                        (check,deepCheck,solve,encryptPath
+                                        )
     --output <outputPrefix>             The prefix of the output files to
                                         write results to. Will create two
                                         output files:
@@ -28,7 +32,7 @@ Detects problems in Cryptomator vaults.
                                         solve. Available:
                                         MissingEqualsSign, UppercasedFile,
                                         LowercasedFile, OrphanMFile
-    --vault <vaultPath>                 The vault to check.
+    --vault <vaultPath>                 On which vault to work.
 ```
 
 ### Examples
@@ -44,13 +48,13 @@ Install the JCE files following the description in the README.txt file inside th
 When you have everything setup you can run the integrity check from the command line (cmd.exe on Windows) using:
 
 ```
-java -jar sanitizer-0.1.jar -vault <pathToYourVault>
+java -jar sanitizer-0.1.jar --cmd check --vault <pathToYourVault>
 ```
 
 You will be asked for the vault passphrase in this case. If that fails you may store your passphrase in a file (without line break at the end!) and use
 
 ```
-java -jar sanitizer-0.1.jar -vault <pathToYourVault> -passphraseFile <pathToThePassphraseFile>
+java -jar sanitizer-0.1.jar --cmd --vault <pathToYourVault> --passphraseFile <pathToThePassphraseFile>
 ```
 
 After completion the tool will print how many problems were found and create two files:
