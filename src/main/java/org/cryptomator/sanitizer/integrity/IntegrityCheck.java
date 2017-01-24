@@ -1,8 +1,5 @@
 package org.cryptomator.sanitizer.integrity;
 
-import static java.lang.String.format;
-import static java.nio.file.Files.isRegularFile;
-import static java.nio.file.Files.readAllBytes;
 import static org.cryptomator.sanitizer.integrity.checks.Checks.aConflict;
 import static org.cryptomator.sanitizer.integrity.checks.Checks.aFileWithMissingEqualsSign;
 import static org.cryptomator.sanitizer.integrity.checks.Checks.containsUuid;
@@ -26,19 +23,11 @@ import static org.cryptomator.sanitizer.integrity.checks.Checks.nameIsDecryptabl
 import static org.cryptomator.sanitizer.integrity.checks.Checks.referencedDirectoryExists;
 import static org.cryptomator.sanitizer.integrity.checks.Checks.rootDirectoryIfMachting;
 
-import java.io.IOException;
 import java.nio.file.Path;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.util.Optional;
 import java.util.Set;
 
-import org.cryptomator.cryptolib.Cryptors;
 import org.cryptomator.cryptolib.api.Cryptor;
-import org.cryptomator.cryptolib.api.CryptorProvider;
-import org.cryptomator.cryptolib.api.InvalidPassphraseException;
-import org.cryptomator.cryptolib.api.KeyFile;
+import org.cryptomator.sanitizer.CryptorHolder;
 import org.cryptomator.sanitizer.integrity.checks.Check;
 import org.cryptomator.sanitizer.integrity.checks.HasCorrespondingDirectoryFileCheck;
 import org.cryptomator.sanitizer.integrity.problems.Problem;
@@ -46,22 +35,16 @@ import org.cryptomator.sanitizer.integrity.problems.Problems;
 
 public class IntegrityCheck {
 
-	private static final int VAULT_VERSION = 5;
+	private final CryptorHolder cryptorHolder;
 
-	private final CryptorProvider cryptorProvider;
-
-	public IntegrityCheck() {
-		try {
-			this.cryptorProvider = Cryptors.version1(SecureRandom.getInstanceStrong());
-		} catch (NoSuchAlgorithmException e) {
-			throw new IllegalStateException("Java platform is required to support a strong SecureRandom.", e);
-		}
+	public IntegrityCheck(CryptorHolder cryptorHolder) {
+		this.cryptorHolder = cryptorHolder;
 	}
 
 	public Set<Problem> check(Path path, CharSequence passphrase, boolean checkFileIntegrity) throws AbortCheckException {
 		Problems problems = new Problems(path);
 		try {
-			createCryptor(problems, path, passphrase).ifPresent(cryptor -> {
+			cryptorHolder.createCryptor(problems, path, passphrase).ifPresent(cryptor -> {
 				try {
 					vaultFormatChecks(cryptor, path, checkFileIntegrity).check(problems, path);
 				} finally {
@@ -74,32 +57,6 @@ public class IntegrityCheck {
 			problems.reportException(e);
 		}
 		return problems.asSet();
-	}
-
-	private Optional<Cryptor> createCryptor(Problems problems, Path path, CharSequence passphrase) throws IOException, AbortCheckException {
-		Path masterkeyFile = path.resolve("masterkey.cryptomator");
-		try {
-			if (!isRegularFile(masterkeyFile)) {
-				problems.reportMissingMasterkeyFile(masterkeyFile);
-				return Optional.empty();
-			}
-			KeyFile keyFile = KeyFile.parse(readAllBytes(masterkeyFile));
-			if (keyFile.getVersion() != VAULT_VERSION) {
-				throw new AbortCheckException(format("Vault version mismatch. Exepcted: %d Actual: %d", VAULT_VERSION, keyFile.getVersion()));
-			}
-			return Optional.of(cryptorProvider.createFromKeyFile(keyFile, passphrase, keyFile.getVersion()));
-		} catch (InvalidPassphraseException e) {
-			throw new AbortCheckException("Invalid passphrase");
-		} catch (IllegalArgumentException e) {
-			if (e.getCause() instanceof InvalidKeyException) {
-				throw new AbortCheckException("JCE files seem to be missing. Download from \n" //
-						+ "http://www.oracle.com/technetwork/java/javase/downloads/jce8-download-2133166.html.\n" //
-						+ "and install according to instructions in README.txt");
-			} else {
-				problems.reportInvalidMasterkeyFile(masterkeyFile);
-			}
-		}
-		return Optional.empty();
 	}
 
 	private Check vaultFormatChecks(Cryptor cryptor, Path pathToVault, boolean checkContentIntegrity) {

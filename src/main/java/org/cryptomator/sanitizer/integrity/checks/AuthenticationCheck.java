@@ -41,6 +41,10 @@ class AuthenticationCheck implements Check {
 				problems.reportUnauthenticFileHeader(path);
 				return;
 			}
+			long filesize = header.getFilesize();
+			if (filesize != -1L) {
+				problems.reportFileSizeInHeader(path, filesize);
+			}
 			long chunkNumber = 0;
 			while (alsoCheckContent && (read = in.read(contentBuf)) > 0) {
 				contentBuf.flip();

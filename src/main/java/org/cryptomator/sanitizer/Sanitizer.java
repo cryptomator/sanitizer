@@ -38,17 +38,16 @@ public class Sanitizer {
 	private static final String[] KIBI_POWERS = {"B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"};
 
 	public static void main(String[] stringArgs) {
-		System.out.println("# Cryptomator vault sanitizer v" + Version.get() + " #");
-		System.out.println();
+		print("# Cryptomator vault sanitizer v" + Version.get() + " #");
+		print();
 		Args.parse(stringArgs).ifPresent(Sanitizer::main);
 	}
 
 	public static void main(Args args) {
-		switch (args.command().toLowerCase()) {
+		switch (args.command()) {
 		case "check":
 		case "deepcheck":
-		case "solve":
-			integrityCheck(args, "deepCheck".equalsIgnoreCase(args.command()), "solve".equalsIgnoreCase(args.command()));
+			integrityCheck(args, "deepCheck".equalsIgnoreCase(args.command()));
 			break;
 		case "encryptpath":
 			encryptPath(args);
@@ -59,33 +58,27 @@ public class Sanitizer {
 		}
 	}
 
-	private static void integrityCheck(Args args, boolean deepCheck, boolean solve) {
-		IntegrityCheck integrityCheck = new IntegrityCheck();
-		try (Passphrase passphrase = args.passphrase()) {
-			System.out.println("Scanning vault structure may take some time. Be patient...");
+	private static void integrityCheck(Args args, boolean deepCheck) {
+		try (CryptorHolder cryptorHolder = new CryptorHolder(); //
+				Passphrase passphrase = args.passphrase()) {
+			IntegrityCheck integrityCheck = new IntegrityCheck(cryptorHolder);
+			print("Scanning vault structure may take some time. Be patient...");
+
 			writeStructureToOutput(args, args.vaultLocation());
-			System.out.println("Checking the vault may take some time. Be patient...");
-			System.out.println();
+
+			print("Checking the vault may take some time. Be patient...");
+			print();
+
 			Set<Problem> problems = integrityCheck.check(args.vaultLocation(), passphrase, deepCheck);
 			writeResultsToConsole(args, problems);
 			writeProblemsToOutput(args, problems);
-			if (solve) {
-				List<Problem> problemsToSolve = problems.stream() //
-						.filter(problem -> args.problemsToSolve().contains(problem.name())) //
-						.collect(toList());
-				if (!problemsToSolve.isEmpty()) {
-					System.out.println();
-					System.out.println("Solving problems. This may take some time. Be patient...");
-					System.out.println();
-					SolutionContext context = SolutionContext.executePrintingTo(args.vaultLocation(), System.out);
-					problemsToSolve.forEach(problem -> problem.solution().ifPresent(solution -> solution.execute(context)));
-				}
-			}
-			System.out.println();
-			System.out.println("Done.");
+			maybeSolveProblems(args, cryptorHolder, problems);
+
+			print();
+			print("Done.");
 		} catch (AbortCheckException e) {
-			System.err.print("Check failed: ");
-			System.err.println(e.getMessage());
+			printNoNewline("Check failed: ");
+			print(e.getMessage());
 		}
 	}
 
@@ -101,6 +94,21 @@ public class Sanitizer {
 		}
 	}
 
+	private static void maybeSolveProblems(Args args, CryptorHolder cryptorHolder, Set<Problem> problems) {
+		if (cryptorHolder.optionalCryptor().isPresent()) {
+			List<Problem> problemsToSolve = problems.stream() //
+					.filter(problem -> args.problemsToSolve().contains(problem.name())) //
+					.collect(toList());
+			if (!problemsToSolve.isEmpty()) {
+				print();
+				print("Solving problems. This may take some time. Be patient...");
+				print();
+				SolutionContext context = SolutionContext.executePrintingTo(args.vaultLocation(), cryptorHolder.optionalCryptor().get(), System.out);
+				problemsToSolve.forEach(problem -> problem.solution().ifPresent(solution -> solution.execute(context)));
+			}
+		}
+	}
+
 	private static void writeStructureToOutput(Args args, Path vaultLocation) {
 		Counter counter = new Counter();
 		try (PrintWriter writer = new PrintWriter(newBufferedWriter(args.structureOutputFile(), UTF_8, CREATE_NEW, WRITE)); //
@@ -110,9 +118,9 @@ public class Sanitizer {
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
 		}
-		System.out.println("Wrote structure to " + args.structureOutputFile() + ".");
-		System.out.println(counter.get() + " files in vault");
-		System.out.println();
+		print("Wrote structure to " + args.structureOutputFile() + ".");
+		print(counter.get() + " files in vault");
+		print();
 	}
 
 	private static Consumer<Path> writePathToOutput(Args args, PrintWriter writer) {
@@ -146,12 +154,12 @@ public class Sanitizer {
 	}
 
 	private static void writeResultsToConsole(Args args, Set<Problem> problems) {
-		System.out.println("Found " + countProblems(problems) + " problem(s):");
+		print("Found " + countProblems(problems) + " problem(s):");
 		for (Severity severity : Severity.values()) {
-			System.out.println("* " + problems.stream().filter(problem -> problem.severity() == severity).count() + " " + severity);
+			print("* " + problems.stream().filter(problem -> problem.severity() == severity).count() + " " + severity);
 		}
-		System.out.println();
-		System.out.println("See " + args.checkOutputFile() + " for details.");
+		print();
+		print("See " + args.checkOutputFile() + " for details.");
 	}
 
 	private static void writeProblemsToOutput(Args args, Set<Problem> problems) {
@@ -182,4 +190,17 @@ public class Sanitizer {
 	private static long countProblems(Set<Problem> problems) {
 		return problems.stream().filter(problem -> problem.severity() != INFO).count();
 	}
+
+	private static void print() {
+		System.out.println();
+	}
+
+	private static void printNoNewline(String line) {
+		System.out.print(line);
+	}
+
+	private static void print(String line) {
+		System.out.println(line);
+	}
+
 }

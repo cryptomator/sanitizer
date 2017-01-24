@@ -37,7 +37,7 @@ import org.cryptomator.sanitizer.integrity.AbortCheckException;
 
 public class Args {
 
-	private static final String[] COMMANDS = new String[] {"check", "deepCheck", "solve", "encryptPath"};
+	private static final String[] COMMANDS = new String[] {"check", "deepCheck", "encryptPath"};
 	private static final String USAGE = "java -jar sanitizer-" + Version.get() + ".jar" //
 			+ " -vault vaultToCheck" //
 			+ " -cmd " + org.apache.commons.lang3.StringUtils.join(COMMANDS, '|') //
@@ -46,7 +46,13 @@ public class Args {
 			+ " [-output outputPrefix]";
 	private static final String HEADER = "\nDetects problems in Cryptomator vaults.\n\n";
 	private static final Options OPTIONS = new Options();
-	private static final Set<String> ALLOWED_PROBLEMS_TO_SOLVE = new HashSet<>(asList("LowercasedFile", "MissingEqualsSign", "OrphanMFile", "UppercasedFile"));
+	private static final Set<String> ALLOWED_PROBLEMS_TO_SOLVE = new HashSet<>(asList( //
+			"LowercasedFile", //
+			"MissingEqualsSign", //
+			"OrphanMFile", //
+			"UppercasedFile", //
+			"FileSizeOfZeroInHeader", //
+			"FileSizeInHeader"));
 	static {
 		OPTIONS.addOption(Option.builder() //
 				.longOpt("vault") //
@@ -101,7 +107,7 @@ public class Args {
 
 	public Args(CommandLine commandLine) throws ParseException {
 		this.vaultLocation = vaultLocation(commandLine);
-		this.command = commandLine.getOptionValue("cmd");
+		this.command = commandLine.getOptionValue("cmd").toLowerCase();
 		this.passphrase = passphrase(commandLine);
 		this.problemsToSolve = problemsToSolve(commandLine);
 		setOutputFiles(commandLine);
