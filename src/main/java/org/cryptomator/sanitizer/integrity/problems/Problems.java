@@ -154,8 +154,12 @@ public class Problems {
 		};
 	}
 
-	public void reportFileSizeInHeader(Path path) {
-		report(new FileSizeInHeaderProblem(sensitive(path)));
+	public void reportFileSizeInHeader(Path path, long filesize) {
+		if (filesize == 0L) {
+			report(new FileSizeOfZeroInHeaderProblem(sensitive(path)));
+		} else {
+			report(new FileSizeInHeaderProblem(sensitive(path), filesize));
+		}
 	}
 
 }

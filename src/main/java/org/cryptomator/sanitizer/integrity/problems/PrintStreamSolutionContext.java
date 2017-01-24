@@ -5,14 +5,18 @@ import static java.lang.String.format;
 import java.io.PrintStream;
 import java.nio.file.Path;
 
+import org.cryptomator.cryptolib.api.Cryptor;
+
 class PrintStreamSolutionContext implements SolutionContext {
 
 	private final Path vaultLocation;
 	private final PrintStream out;
 	private final boolean dryRun;
+	private final Cryptor cryptor;
 
-	public PrintStreamSolutionContext(Path vaultLocation, PrintStream out, boolean dryRun) {
+	public PrintStreamSolutionContext(Path vaultLocation, Cryptor cryptor, PrintStream out, boolean dryRun) {
 		this.vaultLocation = vaultLocation;
+		this.cryptor = cryptor;
 		this.out = out;
 		this.dryRun = dryRun;
 	}
@@ -47,6 +51,11 @@ class PrintStreamSolutionContext implements SolutionContext {
 	@Override
 	public Path vaultLocation() {
 		return vaultLocation;
+	}
+
+	@Override
+	public Cryptor cryptor() {
+		return cryptor;
 	}
 
 }
