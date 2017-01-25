@@ -48,18 +48,18 @@ Install the JCE files following the description in the README.txt file inside th
 When you have everything setup you can run the integrity check from the command line (cmd.exe on Windows) using:
 
 ```
-java -jar sanitizer-0.1.jar --cmd check --vault <pathToYourVault>
+java -jar sanitizer-0.8.jar --cmd check --vault <pathToYourVault>
 ```
 
 You will be asked for the vault passphrase in this case. If that fails you may store your passphrase in a file (without line break at the end!) and use
 
 ```
-java -jar sanitizer-0.1.jar --cmd --vault <pathToYourVault> --passphraseFile <pathToThePassphraseFile>
+java -jar sanitizer-0.8.jar --cmd --vault <pathToYourVault> --passphraseFile <pathToThePassphraseFile>
 ```
 
 After completion the tool will print how many problems were found and create two files:
 
-* `<vault name>.structure.txt`: The full structure of the vault including all files and directories. Contains only encrypted names and the size of files < 300b so we can not see your data. This may help us to diagnose issues not already handled by the sanitizer.
+* `<vault name>.structure.txt`: The full structure of the vault including all files and directories. Contains only encrypted names and the exact size of small and the aproximate size of larger ones so we can not see your data. This may help us to diagnose issues not already handled by the sanitizer.
 * `<vault name>.check.txt`: A list of known issues and some informations. This includes the name of the encrypted root directory. This is useful to check how the root directory looks like when analyzing the structure file.
 
 ## Building
