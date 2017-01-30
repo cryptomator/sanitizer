@@ -1,6 +1,6 @@
-![cryptomator](cryptomator.png)
+![sanitizer](sanitizer.png)
 
-**Cryptomator Sanitizer** - Utilities to find and fix problems within vaults
+Utility to find and fix problems within vaults.
 
 ## Usage
 
@@ -35,32 +35,32 @@ Detects problems in Cryptomator vaults.
     --vault <vaultPath>                 On which vault to work.
 ```
 
-### Examples
-
-You need to have Java 8 and the JCE unlimited strength policy files installed to run this tool.
+You need to have Java 8 and JCE unlimited strength policy files installed to run this tool.
 
 You can download these on
 * http://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html
 * http://www.oracle.com/technetwork/java/javase/downloads/jce8-download-2133166.html
 
-Install the JCE files following the description in the README.txt file inside the downloaded zip archive.
+Install the JCE files following the description in the `README.txt` file inside the downloaded zip archive.
 
-When you have everything setup you can run the integrity check from the command line (cmd.exe on Windows) using:
+### Examples
 
-```
-java -jar sanitizer-0.8.jar --cmd check --vault <pathToYourVault>
-```
-
-You will be asked for the vault passphrase in this case. If that fails you may store your passphrase in a file (without line break at the end!) and use
+When you have everything set up, you can run the integrity check from the command line (cmd.exe on Windows) using:
 
 ```
-java -jar sanitizer-0.8.jar --cmd --vault <pathToYourVault> --passphraseFile <pathToThePassphraseFile>
+java -jar sanitizer-x.y.jar --cmd check --vault <pathToYourVault>
 ```
 
-After completion the tool will print how many problems were found and create two files:
+You will be asked for the vault passphrase in this case. If that fails, you may store your passphrase in a file (without line break at the end!) and use:
 
-* `<vault name>.structure.txt`: The full structure of the vault including all files and directories. Contains only encrypted names and the exact size of small and the aproximate size of larger ones so we can not see your data. This may help us to diagnose issues not already handled by the sanitizer.
-* `<vault name>.check.txt`: A list of known issues and some informations. This includes the name of the encrypted root directory. This is useful to check how the root directory looks like when analyzing the structure file.
+```
+java -jar sanitizer-x.y.jar --cmd --vault <pathToYourVault> --passphraseFile <pathToThePassphraseFile>
+```
+
+After completion, the tool will print how many problems were found and create two files:
+
+* `<vault name>.structure.txt`: The full structure of the vault including all files and directories. Contains only encrypted names and the exact size of small and the approximate size of larger ones so we can not see your data. This may help us to diagnose issues not already handled by the sanitizer.
+* `<vault name>.check.txt`: A list of known issues and some information. This includes the name of the encrypted root directory. This is useful to check how the root directory looks like when analyzing the structure file.
 
 ## Building
 
