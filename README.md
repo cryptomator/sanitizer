@@ -6,15 +6,15 @@ Utility to find and fix problems within vaults.
 
 ```
 usage: java -jar sanitizer-x.y.jar -vault vaultToCheck -cmd
-            check|deepCheck|solve|encryptPath [-passphraseFile
+            check|deepCheck|encryptPath|decryptFile [-passphraseFile
             passphraseFile] [-solve enabledSolution ...] [-output
             outputPrefix]
 
 Detects problems in Cryptomator vaults.
 
     --cmd <command>                     What to do
-                                        (check,deepCheck,solve,encryptPath
-                                        )
+                                        (check,deepCheck,encryptPath,decry
+                                        ptFile)
     --output <outputPrefix>             The prefix of the output files to
                                         write results to. Will create two
                                         output files:
@@ -31,7 +31,9 @@ Detects problems in Cryptomator vaults.
     --solve <solve>                     Name of one or more problems to
                                         solve. Available:
                                         MissingEqualsSign, UppercasedFile,
-                                        LowercasedFile, OrphanMFile
+                                        LowercasedFile, OrphanMFile,
+                                        FileSizeOfZeroInHeader,
+                                        FileSizeInHeader
     --vault <vaultPath>                 On which vault to work.
 ```
 
