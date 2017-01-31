@@ -29,7 +29,7 @@ public class PathEncryptor {
 		Cryptor cryptor = provider.createFromKeyFile(keyFile, passphrase, keyFile.getVersion());
 
 		Path filePath = resolvePath(vaultLocation, console, cryptor);
-		console.printf("Resolved: %s", filePath);
+		console.printf("Resolved: %s\n", filePath);
 
 		cryptor.destroy();
 	}

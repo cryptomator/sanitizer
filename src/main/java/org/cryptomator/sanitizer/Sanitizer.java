@@ -29,6 +29,7 @@ import org.cryptomator.sanitizer.integrity.IntegrityCheck;
 import org.cryptomator.sanitizer.integrity.problems.Problem;
 import org.cryptomator.sanitizer.integrity.problems.Severity;
 import org.cryptomator.sanitizer.integrity.problems.SolutionContext;
+import org.cryptomator.sanitizer.restorer.FileDecryptor;
 import org.cryptomator.sanitizer.restorer.PathEncryptor;
 import org.cryptomator.sanitizer.utils.Counter;
 
@@ -51,6 +52,9 @@ public class Sanitizer {
 			break;
 		case "encryptpath":
 			encryptPath(args);
+			break;
+		case "decryptfile":
+			decryptFile(args);
 			break;
 		default:
 			System.err.println("Unknown command");
@@ -85,6 +89,18 @@ public class Sanitizer {
 	private static void encryptPath(Args args) {
 		try (Passphrase passphrase = args.passphrase()) {
 			PathEncryptor.encryptPath(args.vaultLocation(), passphrase);
+		} catch (InvalidPassphraseException e) {
+			System.err.println("Invalid passphrase.");
+		} catch (AbortCheckException e) {
+			System.err.println(e.getMessage());
+		} catch (IOException e) {
+			System.err.println(e.getMessage());
+		}
+	}
+
+	private static void decryptFile(Args args) {
+		try (Passphrase passphrase = args.passphrase()) {
+			FileDecryptor.decryptFile(args.vaultLocation(), passphrase);
 		} catch (InvalidPassphraseException e) {
 			System.err.println("Invalid passphrase.");
 		} catch (AbortCheckException e) {
