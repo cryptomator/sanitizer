@@ -37,6 +37,8 @@ Detects problems in Cryptomator vaults.
     --vault <vaultPath>                 On which vault to work.
 ```
 
+### Requirements
+
 You need to have Java 8 and JCE unlimited strength policy files installed to run this tool.
 
 You can download these on
