@@ -37,7 +37,7 @@ import org.cryptomator.sanitizer.integrity.AbortCheckException;
 
 public class Args {
 
-	private static final String[] COMMANDS = new String[] {"check", "deepCheck", "encryptPath"};
+	private static final String[] COMMANDS = new String[] {"check", "deepCheck", "encryptPath", "decryptFile"};
 	private static final String USAGE = "java -jar sanitizer-" + Version.get() + ".jar" //
 			+ " -vault vaultToCheck" //
 			+ " -cmd " + org.apache.commons.lang3.StringUtils.join(COMMANDS, '|') //
