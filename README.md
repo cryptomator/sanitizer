@@ -5,7 +5,7 @@ Utility to find and fix problems within vaults.
 ## Usage
 
 ```
-java -jar sanitizer-0.10-SNAPSHOT.jar command ...
+java -jar sanitizer-0.10.jar command ...
 
 commands:
 * check
@@ -16,7 +16,7 @@ commands:
 ### check command usage
 
 ```
-java -jar sanitizer-0.10-SNAPSHOT.jar check -vault vaultPath [-passphraseFile passphraseFile] [-deep] [-solve enabledSolution ...] [-output outputPrefix]
+java -jar sanitizer-0.10.jar check -vault vaultPath [-passphraseFile passphraseFile] [-deep] [-solve enabledSolution ...] [-output outputPrefix]
 
 Detects problems in Cryptomator vaults.
 
@@ -46,7 +46,7 @@ Detects problems in Cryptomator vaults.
 ### decryptFile command usage
 
 ```
-java -jar sanitizer-0.10-SNAPSHOT.jar decryptFile -vault vaultPath [-passphraseFile passphraseFile]
+java -jar sanitizer-0.10.jar decryptFile -vault vaultPath [-passphraseFile passphraseFile]
 
 Decrypts single Cryptomator files.
 
@@ -63,7 +63,7 @@ Decrypts single Cryptomator files.
 ### encryptPath command usage
 
 ```
-java -jar sanitizer-0.10-SNAPSHOT.jar encryptPath -vault vaultPath [-passphraseFile passphraseFile]
+java -jar sanitizer-0.10.jar encryptPath -vault vaultPath [-passphraseFile passphraseFile]
 
 Encrypt cleartext paths for a Cryptomator vault.
 
