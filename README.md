@@ -1,6 +1,6 @@
 ![sanitizer](sanitizer.png)
 
-Utility to find and fix problems within vaults.
+Utility to find and fix problems within vaults, restoring files and mapping cleartext to encrypted paths.
 
 ## Usage
 
@@ -8,9 +8,9 @@ Utility to find and fix problems within vaults.
 java -jar sanitizer-0.10.jar command ...
 
 commands:
-* check
-* decryptFile
-* encryptPath
+* check - check a vault for problems
+* decryptFile - decrypt the contents of a single file
+* encryptPath - encrypt a cleartext path
 ```
 
 ### check command usage
