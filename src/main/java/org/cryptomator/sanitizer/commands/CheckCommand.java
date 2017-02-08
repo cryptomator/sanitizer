@@ -1,4 +1,4 @@
-package org.cryptomator.sanitizer;
+package org.cryptomator.sanitizer.commands;
 
 import static java.lang.String.format;
 import static java.lang.String.join;
@@ -14,6 +14,7 @@ import java.io.Console;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
@@ -33,19 +34,19 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.cryptomator.sanitizer.Passphrase;
 import org.cryptomator.sanitizer.integrity.AbortCheckException;
 
-public class Args {
+class CheckCommand implements Command {
 
-	private static final String[] COMMANDS = new String[] {"check", "deepCheck", "encryptPath", "decryptFile"};
-	private static final String USAGE = "java -jar sanitizer-" + Version.get() + ".jar" //
-			+ " -vault vaultToCheck" //
-			+ " -cmd " + org.apache.commons.lang3.StringUtils.join(COMMANDS, '|') //
+	private static final String USAGE = "" //
+			+ "-vault vaultPath" //
 			+ " [-passphraseFile passphraseFile]" //
+			+ " [-deep]" //
 			+ " [-solve enabledSolution ...]" //
 			+ " [-output outputPrefix]";
-	private static final String HEADER = "\nDetects problems in Cryptomator vaults.\n\n";
-	private static final Options OPTIONS = new Options();
+	private static final String HEADER = "\nDetects problems in Cryptomator vaults.\n";
+	public static final Options OPTIONS = new Options();
 	private static final Set<String> ALLOWED_PROBLEMS_TO_SOLVE = new HashSet<>(asList( //
 			"LowercasedFile", //
 			"MissingEqualsSign", //
@@ -53,19 +54,13 @@ public class Args {
 			"UppercasedFile", //
 			"FileSizeOfZeroInHeader", //
 			"FileSizeInHeader"));
+
 	static {
 		OPTIONS.addOption(Option.builder() //
 				.longOpt("vault") //
 				.hasArg() //
 				.argName("vaultPath") //
 				.desc("On which vault to work.") //
-				.required() //
-				.build());
-		OPTIONS.addOption(Option.builder() //
-				.longOpt("cmd") //
-				.hasArg() //
-				.argName("command") //
-				.desc("What to do (" + org.apache.commons.lang3.StringUtils.join(COMMANDS, ',') + ")") //
 				.required() //
 				.build());
 		OPTIONS.addOption(Option.builder() //
@@ -87,6 +82,10 @@ public class Args {
 				.desc("Name of one or more problems to solve. Available: " + join(", ", ALLOWED_PROBLEMS_TO_SOLVE)) //
 				.build());
 		OPTIONS.addOption(Option.builder() //
+				.longOpt("deep") //
+				.desc("Check file integrity (Could take a long time).") //
+				.build());
+		OPTIONS.addOption(Option.builder() //
 				.longOpt("output") //
 				.hasArg() //
 				.argName("outputPrefix") //
@@ -97,19 +96,40 @@ public class Args {
 				.build());
 	}
 
-	private final Path vaultLocation;
-	private final String command;
+	private Path vaultLocation;
 	private Passphrase passphrase;
-	private final Set<String> problemsToSolve;
+	private Set<String> problemsToSolve;
+	private boolean deep;
 
 	private Path checkOutputFile;
 	private Path structureOutputFile;
 
-	public Args(CommandLine commandLine) throws ParseException {
+	@Override
+	public String commandLineValue() {
+		return "check";
+	}
+
+	@Override
+	public void printUsage() {
+		System.out.println(USAGE);
+		System.out.println(HEADER);
+		PrintWriter writer = new PrintWriter(System.out);
+		new HelpFormatter().printOptions(writer, 80, OPTIONS, 1, 3);
+		writer.flush();
+	}
+
+	@Override
+	public void run() {
+		new CheckRunner(this).run();
+	}
+
+	@Override
+	public void parse(String[] arguments) throws ParseException {
+		CommandLine commandLine = new DefaultParser().parse(OPTIONS, arguments);
 		this.vaultLocation = vaultLocation(commandLine);
-		this.command = commandLine.getOptionValue("cmd").toLowerCase();
 		this.passphrase = passphrase(commandLine);
 		this.problemsToSolve = problemsToSolve(commandLine);
+		this.deep = commandLine.hasOption("deep");
 		setOutputFiles(commandLine);
 	}
 
@@ -188,10 +208,6 @@ public class Args {
 		return Optional.ofNullable(passphrase);
 	}
 
-	public String command() {
-		return command;
-	}
-
 	public Passphrase passphrase() throws AbortCheckException {
 		if (passphrase == null) {
 			passphrase = readPassphrase();
@@ -209,6 +225,10 @@ public class Args {
 
 	public Path structureOutputFile() {
 		return structureOutputFile;
+	}
+
+	public boolean isDeep() {
+		return deep;
 	}
 
 	public Path checkOutputFile() {
@@ -259,21 +279,6 @@ public class Args {
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
 		}
-	}
-
-	public static Optional<Args> parse(String[] arguments) {
-		try {
-			CommandLine commandLine = new DefaultParser().parse(OPTIONS, arguments);
-			return Optional.of(new Args(commandLine));
-		} catch (ParseException e) {
-			System.err.println(e.getMessage());
-			printUsage();
-			return Optional.empty();
-		}
-	}
-
-	public static void printUsage() {
-		new HelpFormatter().printHelp(USAGE, HEADER, OPTIONS, "");
 	}
 
 }

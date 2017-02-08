@@ -5,35 +5,75 @@ Utility to find and fix problems within vaults.
 ## Usage
 
 ```
-usage: java -jar sanitizer-x.y.jar -vault vaultToCheck -cmd
-            check|deepCheck|encryptPath|decryptFile [-passphraseFile
-            passphraseFile] [-solve enabledSolution ...] [-output
-            outputPrefix]
+java -jar sanitizer-0.10-SNAPSHOT.jar command ...
+
+commands:
+* check
+* decryptFile
+* encryptPath
+```
+
+### check command usage
+
+```
+java -jar sanitizer-0.10-SNAPSHOT.jar check -vault vaultPath [-passphraseFile passphraseFile] [-deep] [-solve enabledSolution ...] [-output outputPrefix]
 
 Detects problems in Cryptomator vaults.
 
-    --cmd <command>                     What to do
-                                        (check,deepCheck,encryptPath,decry
-                                        ptFile)
-    --output <outputPrefix>             The prefix of the output files to
-                                        write results to. Will create two
-                                        output files:
+    --deep                              Check file integrity (Could take a long
+                                        time).
+    --output <outputPrefix>             The prefix of the output files to write
+                                        results to. Will create two output
+                                        files:
                                         * <outputPrefix>.structure.txt and
                                         * <outputPrefix>.check.txt.
                                         Default: name of vault
-    --passphrase <passphrase>           DO NOT USE. ONLY FOR TESTING
-                                        PURPOSES. The cleartext vault
-                                        passphrase. Omit this and you will
-                                        be promted for the passphrase.
-    --passphraseFile <passphraseFile>   A file to read the password from.
-                                        Omit this and you will be promted
-                                        for the passphrase.
-    --solve <solve>                     Name of one or more problems to
-                                        solve. Available:
-                                        MissingEqualsSign, UppercasedFile,
-                                        LowercasedFile, OrphanMFile,
-                                        FileSizeOfZeroInHeader,
+    --passphrase <passphrase>           DO NOT USE. ONLY FOR TESTING PURPOSES.
+                                        The cleartext vault passphrase. Omit
+                                        this and you will be promted for the
+                                        passphrase.
+    --passphraseFile <passphraseFile>   A file to read the password from. Omit
+                                        this and you will be promted for the
+                                        passphrase.
+    --solve <solve>                     Name of one or more problems to solve.
+                                        Available: MissingEqualsSign,
+                                        UppercasedFile, LowercasedFile,
+                                        OrphanMFile, FileSizeOfZeroInHeader,
                                         FileSizeInHeader
+    --vault <vaultPath>                 On which vault to work.
+```
+
+### decryptFile command usage
+
+```
+java -jar sanitizer-0.10-SNAPSHOT.jar decryptFile -vault vaultPath [-passphraseFile passphraseFile]
+
+Decrypts single Cryptomator files.
+
+    --passphrase <passphrase>           DO NOT USE. ONLY FOR TESTING PURPOSES.
+                                        The cleartext vault passphrase. Omit
+                                        this and you will be promted for the
+                                        passphrase.
+    --passphraseFile <passphraseFile>   A file to read the password from. Omit
+                                        this and you will be promted for the
+                                        passphrase.
+    --vault <vaultPath>                 On which vault to work.
+```
+
+### encryptPath command usage
+
+```
+java -jar sanitizer-0.10-SNAPSHOT.jar encryptPath -vault vaultPath [-passphraseFile passphraseFile]
+
+Encrypt cleartext paths for a Cryptomator vault.
+
+    --passphrase <passphrase>           DO NOT USE. ONLY FOR TESTING PURPOSES.
+                                        The cleartext vault passphrase. Omit
+                                        this and you will be promted for the
+                                        passphrase.
+    --passphraseFile <passphraseFile>   A file to read the password from. Omit
+                                        this and you will be promted for the
+                                        passphrase.
     --vault <vaultPath>                 On which vault to work.
 ```
 
