@@ -2,6 +2,12 @@
 
 Utility to find and fix problems within vaults, restoring files and mapping cleartext to encrypted paths.
 
+## Download
+
+Sanitizer is a Java program. The current version can be downloaded from the [releases page](https://github.com/cryptomator/sanitizer/releases).
+
+You will need Java 8 installed to run it.
+
 ## Usage
 
 ```
