@@ -1,22 +1,29 @@
 ![sanitizer](sanitizer.png)
 
-Utility to find and fix problems within vaults.
+Utility to find and fix problems within vaults, restoring files and mapping cleartext to encrypted paths.
+
+## Download
+
+Sanitizer is a Java program. The current version can be downloaded from the [releases page](https://github.com/cryptomator/sanitizer/releases).
+
+You will need Java 8 installed to run it.
 
 ## Usage
 
 ```
-java -jar sanitizer-0.10.jar command ...
+java -jar sanitizer-0.11.jar command ...
 
 commands:
-* check
-* decryptFile
-* encryptPath
+* check - check a vault for problems
+* decryptFile - decrypt the contents of a single file
+* encryptPath - encrypt a cleartext path
+* decryptVault - decrypt a complete vault and restore inaccessible data
 ```
 
 ### check command usage
 
 ```
-java -jar sanitizer-0.10.jar check -vault vaultPath [-passphraseFile passphraseFile] [-deep] [-solve enabledSolution ...] [-output outputPrefix]
+java -jar sanitizer-0.11.jar check -vault vaultPath [-passphraseFile passphraseFile] [-deep] [-solve enabledSolution ...] [-output outputPrefix]
 
 Detects problems in Cryptomator vaults.
 
@@ -46,7 +53,7 @@ Detects problems in Cryptomator vaults.
 ### decryptFile command usage
 
 ```
-java -jar sanitizer-0.10.jar decryptFile -vault vaultPath [-passphraseFile passphraseFile]
+java -jar sanitizer-0.11.jar decryptFile -vault vaultPath [-passphraseFile passphraseFile]
 
 Decrypts single Cryptomator files.
 
@@ -63,7 +70,7 @@ Decrypts single Cryptomator files.
 ### encryptPath command usage
 
 ```
-java -jar sanitizer-0.10.jar encryptPath -vault vaultPath [-passphraseFile passphraseFile]
+java -jar sanitizer-0.11.jar encryptPath -vault vaultPath [-passphraseFile passphraseFile]
 
 Encrypt cleartext paths for a Cryptomator vault.
 
@@ -74,6 +81,24 @@ Encrypt cleartext paths for a Cryptomator vault.
     --passphraseFile <passphraseFile>   A file to read the password from. Omit
                                         this and you will be promted for the
                                         passphrase.
+    --vault <vaultPath>                 On which vault to work.
+```
+
+### decryptVault command usage
+
+```
+java -jar sanitizer-0.11.jar decryptVault -vault vaultPath -target targetPath [-passphraseFile passphraseFile]
+
+Decrypts all data from a vault and tries to restore inaccessible data.
+
+    --passphrase <passphrase>           DO NOT USE. ONLY FOR TESTING PURPOSES.
+                                        The cleartext vault passphrase. Omit
+                                        this and you will be promted for the
+                                        passphrase.
+    --passphraseFile <passphraseFile>   A file to read the password from. Omit
+                                        this and you will be promted for the
+                                        passphrase.
+    --target <targetPath>               Where to place the exported data.
     --vault <vaultPath>                 On which vault to work.
 ```
 
@@ -92,13 +117,13 @@ Install the JCE files following the description in the `README.txt` file inside 
 When you have everything set up, you can run the integrity check from the command line (cmd.exe on Windows) using:
 
 ```
-java -jar sanitizer-x.y.jar --cmd check --vault <vaultPath>
+java -jar sanitizer-x.y.jar check --vault <vaultPath>
 ```
 
 You will be asked for the vault passphrase in this case. If that fails, you may store your passphrase in a file (without line break at the end!) and use:
 
 ```
-java -jar sanitizer-x.y.jar --cmd check --vault <vaultPath> --passphraseFile <passphraseFile>
+java -jar sanitizer-x.y.jar check --vault <vaultPath> --passphraseFile <passphraseFile>
 ```
 
 After completion, the tool will print how many problems were found and create two files:

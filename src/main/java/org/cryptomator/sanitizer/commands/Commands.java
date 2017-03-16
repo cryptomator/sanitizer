@@ -17,7 +17,8 @@ public class Commands {
 	private static final Command[] COMMANDS = { //
 			new CheckCommand(), //
 			new DecryptFileCommand(), //
-			new EncryptPathCommand() //
+			new EncryptPathCommand(), //
+			new DecryptVaultCommand() //
 	};
 
 	public static Optional<Commands> parse(String[] arguments) {
