@@ -45,6 +45,12 @@ public class VaultDecryptor {
 		}
 	}
 
+	/**
+	 * TODO wtf! deduplicate code. See {@link FileDecryptor}, {@link PathEncryptor}.
+	 * 
+	 * @param keyFile
+	 * @return
+	 */
 	private static CryptorProvider bestGuessCryptorProvider(KeyFile keyFile) {
 		switch (keyFile.getVersion()) {
 		case 1:
@@ -52,6 +58,7 @@ public class VaultDecryptor {
 		case 3:
 		case 4:
 		case 5:
+		case 6:
 			return Cryptors.version1(strongSecureRandom());
 		default:
 			throw new IllegalArgumentException("Unsupported vault version " + keyFile.getVersion());

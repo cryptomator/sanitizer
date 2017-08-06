@@ -80,6 +80,7 @@ public class FileDecryptor {
 		case 3:
 		case 4:
 		case 5:
+		case 6:
 			return Cryptors.version1(strongSecureRandom());
 		default:
 			throw new IllegalArgumentException("Unsupported vault version " + keyFile.getVersion());
