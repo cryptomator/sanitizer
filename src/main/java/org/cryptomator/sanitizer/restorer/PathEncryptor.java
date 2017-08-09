@@ -1,6 +1,7 @@
 package org.cryptomator.sanitizer.restorer;
 
 import static org.cryptomator.sanitizer.CryptorHolder.bestGuessCryptorProvider;
+import static org.cryptomator.sanitizer.CryptorHolder.normalizePassphrase;
 
 import java.io.Console;
 import java.io.IOException;
@@ -25,7 +26,7 @@ public class PathEncryptor {
 		Path masterkeyPath = vaultLocation.resolve("masterkey.cryptomator");
 		KeyFile keyFile = KeyFile.parse(Files.readAllBytes(masterkeyPath));
 		CryptorProvider provider = bestGuessCryptorProvider(keyFile);
-		Cryptor cryptor = provider.createFromKeyFile(keyFile, passphrase, keyFile.getVersion());
+		Cryptor cryptor = provider.createFromKeyFile(keyFile, normalizePassphrase(keyFile, passphrase), keyFile.getVersion());
 
 		Path filePath = resolvePath(vaultLocation, console, cryptor);
 		console.printf("Resolved: %s\n", filePath);

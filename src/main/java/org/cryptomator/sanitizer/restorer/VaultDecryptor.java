@@ -2,6 +2,7 @@ package org.cryptomator.sanitizer.restorer;
 
 import static java.nio.file.Files.walk;
 import static org.cryptomator.sanitizer.CryptorHolder.bestGuessCryptorProvider;
+import static org.cryptomator.sanitizer.CryptorHolder.normalizePassphrase;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -29,7 +30,7 @@ public class VaultDecryptor {
 		Path masterkeyPath = vaultLocation.resolve("masterkey.cryptomator");
 		KeyFile keyFile = KeyFile.parse(Files.readAllBytes(masterkeyPath));
 		CryptorProvider provider = bestGuessCryptorProvider(keyFile);
-		Cryptor cryptor = provider.createFromKeyFile(keyFile, passphrase, keyFile.getVersion());
+		Cryptor cryptor = provider.createFromKeyFile(keyFile, normalizePassphrase(keyFile, passphrase), keyFile.getVersion());
 		try {
 			ScannedVault vault = new ScannedVault(cryptor, vaultLocation);
 			Path dDirectory = vaultLocation.resolve("d");

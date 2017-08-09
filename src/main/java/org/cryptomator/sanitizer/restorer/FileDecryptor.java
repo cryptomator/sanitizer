@@ -1,6 +1,7 @@
 package org.cryptomator.sanitizer.restorer;
 
 import static org.cryptomator.sanitizer.CryptorHolder.bestGuessCryptorProvider;
+import static org.cryptomator.sanitizer.CryptorHolder.normalizePassphrase;
 
 import java.io.Console;
 import java.io.IOException;
@@ -33,7 +34,7 @@ public class FileDecryptor {
 		Path outputPath = getOutputPathFromUser(console);
 
 		CryptorProvider provider = bestGuessCryptorProvider(keyFile);
-		Cryptor cryptor = provider.createFromKeyFile(keyFile, passphrase, keyFile.getVersion());
+		Cryptor cryptor = provider.createFromKeyFile(keyFile, normalizePassphrase(keyFile, passphrase), keyFile.getVersion());
 		try (ReadableByteChannel readableByteChannel = Files.newByteChannel(ciphertextPath, StandardOpenOption.READ);
 				ReadableByteChannel decryptingReadableByteChannel = new DecryptingReadableByteChannel(readableByteChannel, cryptor, true);
 				WritableByteChannel writableByteChannel = Files.newByteChannel(outputPath, StandardOpenOption.WRITE, StandardOpenOption.CREATE_NEW)) {
