@@ -1,15 +1,15 @@
 package org.cryptomator.sanitizer.restorer;
 
+import static org.cryptomator.sanitizer.CryptorHolder.bestGuessCryptorProvider;
+import static org.cryptomator.sanitizer.CryptorHolder.normalizePassphrase;
+
 import java.io.Console;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 
 import org.apache.commons.lang3.StringUtils;
-import org.cryptomator.cryptolib.Cryptors;
 import org.cryptomator.cryptolib.api.Cryptor;
 import org.cryptomator.cryptolib.api.CryptorProvider;
 import org.cryptomator.cryptolib.api.KeyFile;
@@ -26,7 +26,7 @@ public class PathEncryptor {
 		Path masterkeyPath = vaultLocation.resolve("masterkey.cryptomator");
 		KeyFile keyFile = KeyFile.parse(Files.readAllBytes(masterkeyPath));
 		CryptorProvider provider = bestGuessCryptorProvider(keyFile);
-		Cryptor cryptor = provider.createFromKeyFile(keyFile, passphrase, keyFile.getVersion());
+		Cryptor cryptor = provider.createFromKeyFile(keyFile, normalizePassphrase(keyFile, passphrase), keyFile.getVersion());
 
 		Path filePath = resolvePath(vaultLocation, console, cryptor);
 		console.printf("Resolved: %s\n", filePath);
@@ -42,28 +42,6 @@ public class PathEncryptor {
 			return result;
 		} else {
 			throw new NoSuchFileException(result.toString());
-		}
-	}
-
-	private static CryptorProvider bestGuessCryptorProvider(KeyFile keyFile) {
-		switch (keyFile.getVersion()) {
-		case 1:
-		case 2:
-		case 3:
-		case 4:
-		case 5:
-		case 6:
-			return Cryptors.version1(strongSecureRandom());
-		default:
-			throw new IllegalArgumentException("Unsupported vault version " + keyFile.getVersion());
-		}
-	}
-
-	private static SecureRandom strongSecureRandom() {
-		try {
-			return SecureRandom.getInstanceStrong();
-		} catch (NoSuchAlgorithmException e) {
-			throw new IllegalStateException("Java platform is required to support a strong SecureRandom.", e);
 		}
 	}
 
