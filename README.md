@@ -11,7 +11,7 @@ You will need Java 8 installed to run it.
 ## Usage
 
 ```
-java -jar sanitizer-0.11.jar command ...
+java -jar sanitizer-0.14.jar command ...
 
 commands:
 * check - check a vault for problems
@@ -20,10 +20,12 @@ commands:
 * decryptVault - decrypt a complete vault and restore inaccessible data
 ```
 
+A more detailed guide on how to use Sanitizer can be found [here](https://community.cryptomator.org/t/sanitizer-how-to-use/43).
+
 ### check command usage
 
 ```
-java -jar sanitizer-0.11.jar check -vault vaultPath [-passphraseFile passphraseFile] [-deep] [-solve enabledSolution ...] [-output outputPrefix]
+java -jar sanitizer-0.14.jar check -vault vaultPath [-passphraseFile passphraseFile] [-deep] [-solve enabledSolution ...] [-output outputPrefix]
 
 Detects problems in Cryptomator vaults.
 
@@ -53,7 +55,7 @@ Detects problems in Cryptomator vaults.
 ### decryptFile command usage
 
 ```
-java -jar sanitizer-0.11.jar decryptFile -vault vaultPath [-passphraseFile passphraseFile]
+java -jar sanitizer-0.14.jar decryptFile -vault vaultPath [-passphraseFile passphraseFile]
 
 Decrypts single Cryptomator files.
 
@@ -70,7 +72,7 @@ Decrypts single Cryptomator files.
 ### encryptPath command usage
 
 ```
-java -jar sanitizer-0.11.jar encryptPath -vault vaultPath [-passphraseFile passphraseFile]
+java -jar sanitizer-0.14.jar encryptPath -vault vaultPath [-passphraseFile passphraseFile]
 
 Encrypt cleartext paths for a Cryptomator vault.
 
@@ -87,7 +89,7 @@ Encrypt cleartext paths for a Cryptomator vault.
 ### decryptVault command usage
 
 ```
-java -jar sanitizer-0.11.jar decryptVault -vault vaultPath -target targetPath [-passphraseFile passphraseFile]
+java -jar sanitizer-0.14.jar decryptVault -vault vaultPath -target targetPath [-passphraseFile passphraseFile]
 
 Decrypts all data from a vault and tries to restore inaccessible data.
 
@@ -128,7 +130,7 @@ java -jar sanitizer-x.y.jar check --vault <vaultPath> --passphraseFile <passphra
 
 After completion, the tool will print how many problems were found and create two files:
 
-* `<vaultName>.structure.txt`: The full structure of the vault including all files and directories. Contains only encrypted names and the exact size of small and the approximate size of larger ones so we can not see your data. This may help us to diagnose issues not already handled by the sanitizer.
+* `<vaultName>.structure.txt`: The full structure of the vault including all files and directories. Contains only encrypted names and the exact size of small and the approximate size of larger ones so we can not see your data. This may help us to diagnose issues not already handled by Sanitizer.
 * `<vaultName>.check.txt`: A list of known issues and some information. This includes the name of the encrypted root directory. This is useful to check how the root directory looks like when analyzing the structure file.
 
 ## Building

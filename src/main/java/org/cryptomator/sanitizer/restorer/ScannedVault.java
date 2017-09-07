@@ -312,6 +312,8 @@ class ScannedVault {
 					writableByteChannel.write(buff);
 					buff.clear();
 				}
+			} catch (AuthenticationFailedException e) {
+				System.out.println("Unable to decrypt: " + dDir.relativize(path) + ". AuthenticationFailedException: " + e.getMessage());
 			}
 		}
 

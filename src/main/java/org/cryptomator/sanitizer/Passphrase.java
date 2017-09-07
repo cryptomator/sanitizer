@@ -36,4 +36,9 @@ public class Passphrase implements CharSequence, AutoCloseable {
 		return new Passphrase(result);
 	}
 
+	@Override
+	public String toString() {
+		return new String(chars);
+	}
+
 }
