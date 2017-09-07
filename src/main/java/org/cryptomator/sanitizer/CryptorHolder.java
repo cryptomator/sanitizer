@@ -43,7 +43,7 @@ public class CryptorHolder implements AutoCloseable {
 			}
 			KeyFile keyFile = KeyFile.parse(readAllBytes(masterkeyFile));
 			if (keyFile.getVersion() != VAULT_VERSION) {
-				throw new AbortCheckException(format("Vault version mismatch. Exepcted: %d Actual: %d", VAULT_VERSION, keyFile.getVersion()));
+				throw new AbortCheckException(format("Vault version mismatch. Expected: %d Actual: %d", VAULT_VERSION, keyFile.getVersion()));
 			}
 			cryptor = Optional.of(bestGuessCryptorProvider(keyFile).createFromKeyFile(keyFile, normalizePassphrase(keyFile, passphrase), keyFile.getVersion()));
 			return cryptor;
