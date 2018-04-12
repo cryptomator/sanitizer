@@ -1,7 +1,6 @@
 package org.cryptomator.sanitizer.integrity.checks;
 
-import static java.nio.file.Files.walk;
-import static org.cryptomator.sanitizer.utils.NameUtil.decryptablePartOfName;
+import org.cryptomator.sanitizer.integrity.problems.Problems;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -12,9 +11,10 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import org.cryptomator.sanitizer.integrity.problems.Problems;
+import static java.nio.file.Files.walk;
+import static org.cryptomator.sanitizer.utils.NameUtil.decryptablePartOfName;
 
-class HasCorrespondingDFileCheck implements Check {
+public class HasCorrespondingDFileCheck implements Check {
 
 	private static final Pattern LNG_FILE = Pattern.compile("[A-Z2-7]{32}\\.lng");
 

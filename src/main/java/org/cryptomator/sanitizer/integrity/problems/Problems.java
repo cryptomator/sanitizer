@@ -1,6 +1,6 @@
 package org.cryptomator.sanitizer.integrity.problems;
 
-import static java.util.Collections.unmodifiableSet;
+import org.cryptomator.sanitizer.integrity.problems.NameNormalizationProblem.EncryptedNodeInfo;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -8,6 +8,8 @@ import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+
+import static java.util.Collections.unmodifiableSet;
 
 public class Problems {
 
@@ -73,6 +75,10 @@ public class Problems {
 
 	public void reportNameProblem(String expected, Path path) {
 		report(new NameProblem(expected, sensitive(path)));
+	}
+
+	public void reportNameNormalizationProblem(EncryptedNodeInfo encryptedNodeInfo) {
+		report(new NameNormalizationProblem(sensitive(encryptedNodeInfo.getFilePath()), encryptedNodeInfo));
 	}
 
 	public void reportLowercasedFile(Path path) {
@@ -161,5 +167,4 @@ public class Problems {
 			report(new FileSizeInHeaderProblem(sensitive(path), filesize));
 		}
 	}
-
 }

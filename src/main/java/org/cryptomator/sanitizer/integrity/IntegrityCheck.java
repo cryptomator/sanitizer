@@ -1,37 +1,18 @@
 package org.cryptomator.sanitizer.integrity;
 
-import static org.cryptomator.sanitizer.integrity.checks.Checks.aConflict;
-import static org.cryptomator.sanitizer.integrity.checks.Checks.aFileWithMissingEqualsSign;
-import static org.cryptomator.sanitizer.integrity.checks.Checks.containsUuid;
-import static org.cryptomator.sanitizer.integrity.checks.Checks.containsValidDirectoryFileName;
-import static org.cryptomator.sanitizer.integrity.checks.Checks.containsValidFileName;
-import static org.cryptomator.sanitizer.integrity.checks.Checks.containsValidName;
-import static org.cryptomator.sanitizer.integrity.checks.Checks.dir;
-import static org.cryptomator.sanitizer.integrity.checks.Checks.emptyEncryptedFileIfEmpty;
-import static org.cryptomator.sanitizer.integrity.checks.Checks.file;
-import static org.cryptomator.sanitizer.integrity.checks.Checks.hasCorrespondingDFileIn;
-import static org.cryptomator.sanitizer.integrity.checks.Checks.hasCorrespondingDirectoryFile;
-import static org.cryptomator.sanitizer.integrity.checks.Checks.hasCorrespondingMFileIn;
-import static org.cryptomator.sanitizer.integrity.checks.Checks.hasMinSize;
-import static org.cryptomator.sanitizer.integrity.checks.Checks.hasName;
-import static org.cryptomator.sanitizer.integrity.checks.Checks.hasSize;
-import static org.cryptomator.sanitizer.integrity.checks.Checks.isAuthentic;
-import static org.cryptomator.sanitizer.integrity.checks.Checks.isMasterkeyBackupFile;
-import static org.cryptomator.sanitizer.integrity.checks.Checks.nameDoesNotContainLowercaseChars;
-import static org.cryptomator.sanitizer.integrity.checks.Checks.nameDoesNotContainUppercaseChars;
-import static org.cryptomator.sanitizer.integrity.checks.Checks.nameIsDecryptable;
-import static org.cryptomator.sanitizer.integrity.checks.Checks.referencedDirectoryExists;
-import static org.cryptomator.sanitizer.integrity.checks.Checks.rootDirectoryIfMachting;
+import org.cryptomator.cryptolib.api.Cryptor;
+import org.cryptomator.sanitizer.CryptorHolder;
+import org.cryptomator.sanitizer.integrity.checks.Check;
+import org.cryptomator.sanitizer.integrity.checks.Checks;
+import org.cryptomator.sanitizer.integrity.checks.HasCorrespondingDFileCheck;
+import org.cryptomator.sanitizer.integrity.checks.HasCorrespondingDirectoryFileCheck;
+import org.cryptomator.sanitizer.integrity.problems.Problem;
+import org.cryptomator.sanitizer.integrity.problems.Problems;
 
 import java.nio.file.Path;
 import java.util.Set;
 
-import org.cryptomator.cryptolib.api.Cryptor;
-import org.cryptomator.sanitizer.CryptorHolder;
-import org.cryptomator.sanitizer.integrity.checks.Check;
-import org.cryptomator.sanitizer.integrity.checks.HasCorrespondingDirectoryFileCheck;
-import org.cryptomator.sanitizer.integrity.problems.Problem;
-import org.cryptomator.sanitizer.integrity.problems.Problems;
+import static org.cryptomator.sanitizer.integrity.checks.Checks.*;
 
 public class IntegrityCheck {
 
@@ -62,8 +43,9 @@ public class IntegrityCheck {
 	private Check vaultFormatChecks(Cryptor cryptor, Path pathToVault, boolean checkContentIntegrity) {
 		Check referencedDirectoryExists = referencedDirectoryExists(cryptor, pathToVault);
 		HasCorrespondingDirectoryFileCheck hasCorrespondingDirectoryFileCheck = hasCorrespondingDirectoryFile(cryptor, pathToVault);
-		Check nameIsDecryptable = nameIsDecryptable(cryptor, hasCorrespondingDirectoryFileCheck);
-		Check hasCorrespondingDFile = hasCorrespondingDFileIn(pathToVault);
+		Check decryptedNameCheckForRegularFiles = decryptedNameCheck(cryptor, hasCorrespondingDirectoryFileCheck);
+		HasCorrespondingDFileCheck hasCorrespondingDFile = hasCorrespondingDFileIn(pathToVault);
+		Check decryptedNameCheckForLongFiles = Checks.decryptedNameCheck(cryptor, hasCorrespondingDirectoryFileCheck, hasCorrespondingDFile);
 		Check emptyEncryptedFileIfEmpty = emptyEncryptedFileIfEmpty();
 		return dir().containing( //
 				dir().that(hasName("d")).validate(nameDoesNotContainUppercaseChars()).containing( //
@@ -75,12 +57,12 @@ public class IntegrityCheck {
 												file().that(hasName("0([A-Z2-7]{8})*[A-Z2-7=]{8}")) //
 														.validate(nameDoesNotContainLowercaseChars()) //
 														.validate(hasSize(36).and(containsUuid()).and(referencedDirectoryExists)) //
-														.validate(nameIsDecryptable), //
+														.validate(decryptedNameCheckForRegularFiles), //
 												file().that(hasName("([A-Z2-7]{8})*[A-Z2-7=]{8}")) //
 														.reportAs(emptyEncryptedFileIfEmpty) //
 														.validate(nameDoesNotContainLowercaseChars()) //
 														.validate(hasMinSize(88).and(isAuthentic(cryptor, checkContentIntegrity))) //
-														.validate(nameIsDecryptable), //
+														.validate(decryptedNameCheckForRegularFiles), //
 												file().that(hasName("[A-Z2-7]{32}\\.lng").and(hasCorrespondingMFileIn(pathToVault).that(containsValidFileName()))) //
 														.reportAs(emptyEncryptedFileIfEmpty) //
 														.validate(nameDoesNotContainLowercaseChars()) //
@@ -94,18 +76,18 @@ public class IntegrityCheck {
 												file().that(hasName("0?([A-Z2-7]{8})*[A-Z2-7=]{1,7}")) //
 														.validate(nameDoesNotContainLowercaseChars()) //
 														.validate(hasSize(36).and(containsUuid()).and(referencedDirectoryExists)) //
-														.validate(nameIsDecryptable) //
+														.validate(decryptedNameCheckForRegularFiles) //
 														.reportAs(aFileWithMissingEqualsSign()), //
 												file().that(hasName("0([A-Z2-7]{8})*[A-Z2-7=]{8}.+")) //
 														.validate(nameDoesNotContainLowercaseChars()) //
 														.validate(hasSize(36).and(containsUuid()).and(referencedDirectoryExists)) //
-														.validate(nameIsDecryptable) //
+														.validate(decryptedNameCheckForRegularFiles) //
 														.reportAs(aConflict()), //
 												file().that(hasName("([A-Z2-7]{8})*[A-Z2-7=]{8}.+")) //
 														.reportAs(emptyEncryptedFileIfEmpty) //
 														.validate(nameDoesNotContainLowercaseChars()) //
 														.validate(hasMinSize(88).and(isAuthentic(cryptor, checkContentIntegrity))) //
-														.validate(nameIsDecryptable) //
+														.validate(decryptedNameCheckForRegularFiles) //
 														.reportAs(aConflict()), //
 												file().that(hasName("[A-Z2-7]{32}.+\\.lng")) //
 														.validate(nameDoesNotContainLowercaseChars()) //
@@ -116,10 +98,12 @@ public class IntegrityCheck {
 								dir().that(hasName("[A-Z2-7]{2}")).validate(nameDoesNotContainLowercaseChars()).containing( //
 										file().that(hasName("[A-Z2-7]{32}\\.lng")) //
 												.validate(nameDoesNotContainLowercaseChars()) //
-												.validate(hasCorrespondingDFile.and(containsValidName())), //
+												.validate(hasCorrespondingDFile.and(containsValidName()))
+												.validate(decryptedNameCheckForLongFiles), //
 										file().that(hasName("[A-Z2-7]{32}.+\\.lng")) //
 												.validate(nameDoesNotContainLowercaseChars()) //
 												.validate(hasCorrespondingDFile.and(containsValidName())) //
+												.validate(decryptedNameCheckForLongFiles)
 												.reportAs(aConflict())))), //
 				file().that(hasName("masterkey.cryptomator")).validate(nameDoesNotContainUppercaseChars()), // do not validate contents because this already happened when creating the Cryptor
 				file().that(hasName("masterkey.cryptomator.bkup")).validate(isMasterkeyBackupFile()));

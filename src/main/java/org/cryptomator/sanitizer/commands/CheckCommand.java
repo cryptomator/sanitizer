@@ -1,41 +1,21 @@
 package org.cryptomator.sanitizer.commands;
 
-import static java.lang.String.format;
-import static java.lang.String.join;
-import static java.nio.file.Files.deleteIfExists;
-import static java.nio.file.Files.exists;
-import static java.nio.file.Files.isDirectory;
-import static java.nio.file.Files.isReadable;
-import static java.nio.file.Files.isRegularFile;
-import static java.util.Arrays.asList;
+import org.apache.commons.cli.*;
+import org.cryptomator.sanitizer.Passphrase;
+import org.cryptomator.sanitizer.integrity.AbortCheckException;
 
-import java.io.BufferedReader;
-import java.io.Console;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.io.Reader;
-import java.io.UncheckedIOException;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
+import java.nio.file.*;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
-import org.cryptomator.sanitizer.Passphrase;
-import org.cryptomator.sanitizer.integrity.AbortCheckException;
+import static java.lang.String.format;
+import static java.lang.String.join;
+import static java.nio.file.Files.*;
+import static java.util.Arrays.asList;
 
 class CheckCommand implements Command {
 
@@ -53,7 +33,8 @@ class CheckCommand implements Command {
 			"OrphanMFile", //
 			"UppercasedFile", //
 			"FileSizeOfZeroInHeader", //
-			"FileSizeInHeader"));
+			"FileSizeInHeader", //
+			"NameNormalization"));
 
 	static {
 		OPTIONS.addOption(Option.builder() //
@@ -184,7 +165,7 @@ class CheckCommand implements Command {
 			assert pwFileSize <= Integer.MAX_VALUE;
 			char[] chars = new char[(int) pwFileSize];
 			try (InputStream in = Files.newInputStream(path, StandardOpenOption.READ); //
-					Reader reader = new InputStreamReader(in, StandardCharsets.UTF_8)) {
+				 Reader reader = new InputStreamReader(in, StandardCharsets.UTF_8)) {
 				int off = 0, read;
 				while ((read = reader.read(chars, off, 1024)) != -1) {
 					off += read;
