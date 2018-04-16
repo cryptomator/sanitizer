@@ -35,8 +35,12 @@ public class HasCorrespondingDFileCheck implements Check {
 		}
 	}
 
+	public Optional<Path> pathOfDFile(Path mFileInMDir) {
+		return pathOfDFile(mFileInMDir.getFileName().toString());
+	}
+
 	public Optional<Path> pathOfDFile(String mFileName) {
-		String name = decryptablePartOfName(mFileName) + ".lng";
+		String name = decryptablePartOfName(mFileName).orElse("") + ".lng";
 		return Optional.ofNullable(dFileNamesToPaths.get(name));
 	}
 

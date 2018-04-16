@@ -52,7 +52,7 @@ class NameNormalizationProblemSolution implements Solution {
 							.resolve("m")
 							.resolve(mFileHash.substring(0, 2))
 							.resolve(mFileHash.substring(2, 4))
-							.resolve(mFileHash.substring(4) + ".lng"));
+							.resolve(mFileHash + ".lng"));
 				} else {
 					correctFile = encryptedNodeInfo.getFilePath().getParent().resolve(correctName);
 					correctMFile = Optional.empty();
@@ -63,7 +63,6 @@ class NameNormalizationProblemSolution implements Solution {
 				Files.move(encryptedNodeInfo.getFilePath(), correctFile);
 				if (correctMFile.isPresent()) {
 					Files.createDirectories(correctMFile.get().getParent());
-					Files.move(encryptedNodeInfo.getMFile().get(), correctMFile.get());
 					Files.write(correctMFile.get(), correctName.getBytes(UTF_8));
 				}
 			}

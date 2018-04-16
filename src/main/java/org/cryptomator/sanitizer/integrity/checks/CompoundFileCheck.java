@@ -1,20 +1,20 @@
 package org.cryptomator.sanitizer.integrity.checks;
 
-import static java.nio.file.Files.isRegularFile;
+import org.cryptomator.sanitizer.integrity.problems.Problems;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.cryptomator.sanitizer.integrity.problems.Problems;
+import static java.nio.file.Files.isRegularFile;
 
 public class CompoundFileCheck implements FileCheck {
 
 	private final String name;
 	private final boolean required;
-	private Set<Check> validations = new HashSet<>();
-	private Set<Check> matchesChecks = new HashSet<>();
+	private List<Check> validations = new ArrayList<>();
+	private List<Check> matchesChecks = new ArrayList<>();
 
 	CompoundFileCheck() {
 		this.name = "?";

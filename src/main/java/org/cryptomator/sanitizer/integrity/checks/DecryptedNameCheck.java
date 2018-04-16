@@ -46,7 +46,7 @@ class DecryptedNameCheck implements Check {
 	private void checkLongFileOrDirectory(Problems problems, Path path) throws IOException {
 		Optional<String> decryptablePartOfName = decryptablePartOfName(new String(readAllBytes(path), UTF_8));
 		if (decryptablePartOfName.isPresent()) {
-			Optional<Path> dFile = hasCorrespondingDFileCheck.get().pathOfDFile(path.getFileName().toString()); // TODO wrong!
+			Optional<Path> dFile = hasCorrespondingDFileCheck.get().pathOfDFile(path);
 			Optional<String> optionalDirectoryId = dFile
 					.map(this::hashedDirectoryIdForFileInDirectory)
 					.flatMap(hasCorrespondingDirectoryFileCheck::getCleartextId);
