@@ -1,10 +1,7 @@
 package org.cryptomator.sanitizer.integrity.checks;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.nio.file.Files.readAllBytes;
-import static java.nio.file.StandardOpenOption.READ;
-import static java.util.regex.Pattern.CASE_INSENSITIVE;
-import static org.cryptomator.sanitizer.integrity.checks.HasCorrespondingDirectoryFileCheck.ROOT_DIRECTORY_ID;
+import org.cryptomator.cryptolib.api.Cryptor;
+import org.cryptomator.cryptolib.api.KeyFile;
 
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
@@ -12,8 +9,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.regex.Pattern;
 
-import org.cryptomator.cryptolib.api.Cryptor;
-import org.cryptomator.cryptolib.api.KeyFile;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.nio.file.Files.readAllBytes;
+import static java.nio.file.StandardOpenOption.READ;
+import static java.util.regex.Pattern.CASE_INSENSITIVE;
+import static org.cryptomator.sanitizer.integrity.checks.HasCorrespondingDirectoryFileCheck.ROOT_DIRECTORY_ID;
 
 public class Checks {
 
@@ -134,7 +134,7 @@ public class Checks {
 		};
 	}
 
-	public static Check hasCorrespondingDFileIn(Path pathToVault) {
+	public static HasCorrespondingDFileCheck hasCorrespondingDFileIn(Path pathToVault) {
 		return new HasCorrespondingDFileCheck(pathToVault);
 	}
 
@@ -172,8 +172,12 @@ public class Checks {
 		};
 	}
 
-	public static Check nameIsDecryptable(Cryptor cryptor, HasCorrespondingDirectoryFileCheck hasCorrespondingDirectoryFileCheck) {
-		return new NameIsDecryptableCheck(cryptor, hasCorrespondingDirectoryFileCheck);
+	public static Check decryptedNameCheck(Cryptor cryptor, HasCorrespondingDirectoryFileCheck hasCorrespondingDirectoryFileCheck) {
+		return new DecryptedNameCheck(cryptor, hasCorrespondingDirectoryFileCheck);
+	}
+
+	public static Check decryptedNameCheck(Cryptor cryptor, HasCorrespondingDirectoryFileCheck hasCorrespondingDirectoryFileCheck, HasCorrespondingDFileCheck hasCorrespondingDFileCheck) {
+		return new DecryptedNameCheck(cryptor, hasCorrespondingDirectoryFileCheck, hasCorrespondingDFileCheck);
 	}
 
 }

@@ -1,18 +1,15 @@
 package org.cryptomator.sanitizer.integrity.checks;
 
-import static java.util.Arrays.asList;
-import static java.util.stream.Collectors.toSet;
+import org.cryptomator.sanitizer.integrity.problems.Problems;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Stream;
 
-import org.cryptomator.sanitizer.integrity.problems.Problems;
+import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.toSet;
 
 public class CompoundDirectoryCheck implements DirectoryCheck {
 
@@ -20,8 +17,8 @@ public class CompoundDirectoryCheck implements DirectoryCheck {
 
 	private final String name;
 	private final boolean required;
-	private Set<Check> validations = new HashSet<>();
-	private Set<Check> matchesChecks = new HashSet<>();
+	private List<Check> validations = new ArrayList<>();
+	private List<Check> matchesChecks = new ArrayList<>();
 
 	CompoundDirectoryCheck() {
 		this.name = "?";

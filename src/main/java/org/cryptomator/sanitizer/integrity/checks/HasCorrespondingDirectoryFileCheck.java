@@ -1,9 +1,7 @@
 package org.cryptomator.sanitizer.integrity.checks;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.nio.file.Files.readAllBytes;
-import static java.nio.file.Files.walk;
-import static java.util.regex.Pattern.CASE_INSENSITIVE;
+import org.cryptomator.cryptolib.api.Cryptor;
+import org.cryptomator.sanitizer.integrity.problems.Problems;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -15,8 +13,10 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import org.cryptomator.cryptolib.api.Cryptor;
-import org.cryptomator.sanitizer.integrity.problems.Problems;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.nio.file.Files.readAllBytes;
+import static java.nio.file.Files.walk;
+import static java.util.regex.Pattern.CASE_INSENSITIVE;
 
 public class HasCorrespondingDirectoryFileCheck implements Check {
 

@@ -1,13 +1,16 @@
 package org.cryptomator.sanitizer.utils;
 
-import static java.util.regex.Pattern.CASE_INSENSITIVE;
-import static org.cryptomator.sanitizer.utils.StringUtils.cutOfAtEnd;
-import static org.cryptomator.sanitizer.utils.StringUtils.cutOfAtStart;
-import static org.cryptomator.sanitizer.utils.StringUtils.repeat;
+import com.google.common.io.BaseEncoding;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static java.util.regex.Pattern.CASE_INSENSITIVE;
+import static org.cryptomator.sanitizer.utils.StringUtils.*;
 
 public class NameUtil {
 
@@ -36,4 +39,12 @@ public class NameUtil {
 		}
 	}
 
+	public static String mFileHash(String correctName) {
+		try {
+			MessageDigest sha1 = MessageDigest.getInstance("SHA1");
+			return BaseEncoding.base32().encode(sha1.digest(correctName.getBytes(StandardCharsets.UTF_8)));
+		} catch (NoSuchAlgorithmException e) {
+			throw new RuntimeException(e);
+		}
+	}
 }

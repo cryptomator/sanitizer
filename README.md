@@ -6,12 +6,12 @@ Utility to find and fix problems within vaults, restoring files and mapping clea
 
 Sanitizer is a Java program. The current version can be downloaded from the [releases page](https://github.com/cryptomator/sanitizer/releases).
 
-You will need Java 8 installed to run it.
+You will need Java 9 installed to run it.
 
 ## Usage
 
 ```
-java -jar sanitizer-0.14.jar command ...
+java -jar sanitizer-0.15.jar command ...
 
 commands:
 * check - check a vault for problems
@@ -25,7 +25,7 @@ A more detailed guide on how to use Sanitizer can be found [here](https://commun
 ### check command usage
 
 ```
-java -jar sanitizer-0.14.jar check -vault vaultPath [-passphraseFile passphraseFile] [-deep] [-solve enabledSolution ...] [-output outputPrefix]
+java -jar sanitizer-0.15.jar check -vault vaultPath [-passphraseFile passphraseFile] [-deep] [-solve enabledSolution ...] [-output outputPrefix]
 
 Detects problems in Cryptomator vaults.
 
@@ -48,14 +48,14 @@ Detects problems in Cryptomator vaults.
                                         Available: MissingEqualsSign,
                                         UppercasedFile, LowercasedFile,
                                         OrphanMFile, FileSizeOfZeroInHeader,
-                                        FileSizeInHeader
+                                        FileSizeInHeader, NameNormalization
     --vault <vaultPath>                 On which vault to work.
 ```
 
 ### decryptFile command usage
 
 ```
-java -jar sanitizer-0.14.jar decryptFile -vault vaultPath [-passphraseFile passphraseFile]
+java -jar sanitizer-0.15.jar decryptFile -vault vaultPath [-passphraseFile passphraseFile]
 
 Decrypts single Cryptomator files.
 
@@ -72,7 +72,7 @@ Decrypts single Cryptomator files.
 ### encryptPath command usage
 
 ```
-java -jar sanitizer-0.14.jar encryptPath -vault vaultPath [-passphraseFile passphraseFile]
+java -jar sanitizer-0.15.jar encryptPath -vault vaultPath [-passphraseFile passphraseFile]
 
 Encrypt cleartext paths for a Cryptomator vault.
 
@@ -89,7 +89,7 @@ Encrypt cleartext paths for a Cryptomator vault.
 ### decryptVault command usage
 
 ```
-java -jar sanitizer-0.14.jar decryptVault -vault vaultPath -target targetPath [-passphraseFile passphraseFile]
+java -jar sanitizer-0.15.jar decryptVault -vault vaultPath -target targetPath [-passphraseFile passphraseFile]
 
 Decrypts all data from a vault and tries to restore inaccessible data.
 
@@ -106,13 +106,7 @@ Decrypts all data from a vault and tries to restore inaccessible data.
 
 ### Requirements
 
-You need to have Java 8 and JCE unlimited strength policy files installed to run this tool.
-
-You can download these on
-* http://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html
-* http://www.oracle.com/technetwork/java/javase/downloads/jce8-download-2133166.html
-
-Install the JCE files following the description in the `README.txt` file inside the downloaded zip archive.
+You need to have Java 9 installed to run this tool.
 
 ### Examples
 
@@ -137,7 +131,7 @@ After completion, the tool will print how many problems were found and create tw
 
 ### Dependencies
 
-* Java 8 + JCE unlimited strength policy files (needed for 256-bit keys)
+* Java 9
 * Maven 3
 
 ### Run Maven
