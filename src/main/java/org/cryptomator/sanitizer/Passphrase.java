@@ -1,5 +1,6 @@
 package org.cryptomator.sanitizer;
 
+import java.nio.CharBuffer;
 import java.util.Arrays;
 
 /**
@@ -11,6 +12,11 @@ public class Passphrase implements CharSequence, AutoCloseable {
 
 	public Passphrase(char[] chars) {
 		this.chars = chars;
+	}
+
+	public Passphrase(CharBuffer chars) {
+		this.chars = new char[chars.remaining()];
+		chars.get(this.chars);
 	}
 
 	@Override

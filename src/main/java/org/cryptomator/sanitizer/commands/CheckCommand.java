@@ -5,12 +5,14 @@ import org.cryptomator.sanitizer.Passphrase;
 import org.cryptomator.sanitizer.integrity.AbortCheckException;
 
 import java.io.*;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.*;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
 
 import static java.lang.String.format;
 import static java.lang.String.join;
@@ -163,15 +165,20 @@ class CheckCommand implements Command {
 				throw new ParseException("Invalid passphrase file");
 			}
 			assert pwFileSize <= Integer.MAX_VALUE;
-			char[] chars = new char[(int) pwFileSize];
-			try (InputStream in = Files.newInputStream(path, StandardOpenOption.READ); //
-				 Reader reader = new InputStreamReader(in, StandardCharsets.UTF_8)) {
-				int off = 0, read;
-				while ((read = reader.read(chars, off, 1024)) != -1) {
-					off += read;
+			byte[] bytes = Files.readAllBytes(path);
+			try {
+				CharBuffer chars = StandardCharsets.UTF_8.decode(ByteBuffer.wrap(bytes));
+				try {
+					return new Passphrase(chars);
+				} finally {
+					chars.clear();
+					while (chars.hasRemaining()) {
+						chars.put('\0');
+					}
 				}
+			} finally {
+				Arrays.fill(bytes, (byte) 0);
 			}
-			return new Passphrase(chars);
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
 		}
