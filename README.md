@@ -11,7 +11,7 @@ You will need Java 9 installed to run it.
 ## Usage
 
 ```
-java -jar sanitizer-0.14.jar command ...
+java -jar sanitizer-0.15.jar command ...
 
 commands:
 * check - check a vault for problems
@@ -25,7 +25,7 @@ A more detailed guide on how to use Sanitizer can be found [here](https://commun
 ### check command usage
 
 ```
-java -jar sanitizer-0.14.jar check -vault vaultPath [-passphraseFile passphraseFile] [-deep] [-solve enabledSolution ...] [-output outputPrefix]
+java -jar sanitizer-0.15.jar check -vault vaultPath [-passphraseFile passphraseFile] [-deep] [-solve enabledSolution ...] [-output outputPrefix]
 
 Detects problems in Cryptomator vaults.
 
@@ -48,14 +48,14 @@ Detects problems in Cryptomator vaults.
                                         Available: MissingEqualsSign,
                                         UppercasedFile, LowercasedFile,
                                         OrphanMFile, FileSizeOfZeroInHeader,
-                                        FileSizeInHeader
+                                        FileSizeInHeader, NameNormalization
     --vault <vaultPath>                 On which vault to work.
 ```
 
 ### decryptFile command usage
 
 ```
-java -jar sanitizer-0.14.jar decryptFile -vault vaultPath [-passphraseFile passphraseFile]
+java -jar sanitizer-0.15.jar decryptFile -vault vaultPath [-passphraseFile passphraseFile]
 
 Decrypts single Cryptomator files.
 
@@ -72,7 +72,7 @@ Decrypts single Cryptomator files.
 ### encryptPath command usage
 
 ```
-java -jar sanitizer-0.14.jar encryptPath -vault vaultPath [-passphraseFile passphraseFile]
+java -jar sanitizer-0.15.jar encryptPath -vault vaultPath [-passphraseFile passphraseFile]
 
 Encrypt cleartext paths for a Cryptomator vault.
 
@@ -89,7 +89,7 @@ Encrypt cleartext paths for a Cryptomator vault.
 ### decryptVault command usage
 
 ```
-java -jar sanitizer-0.14.jar decryptVault -vault vaultPath -target targetPath [-passphraseFile passphraseFile]
+java -jar sanitizer-0.15.jar decryptVault -vault vaultPath -target targetPath [-passphraseFile passphraseFile]
 
 Decrypts all data from a vault and tries to restore inaccessible data.
 
