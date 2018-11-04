@@ -36,7 +36,7 @@ public class PathEncryptor {
 
 	private static Path resolvePath(Path vaultRoot, Console console, Cryptor cryptor) throws NoSuchFileException {
 		String cleartextPath = StringUtils.removeStart(console.readLine("Enter a (cleartext) path of a file inside the vault: "), "/");
-		String ciphertextPath = new AutomaticCiphertextPathBuilder(vaultRoot, console, cryptor).resolve(cleartextPath);
+		String ciphertextPath = new CiphertextPathBuilder(vaultRoot, console, cryptor).resolve(cleartextPath);
 		Path result = vaultRoot.resolve(ciphertextPath);
 		if (Files.isRegularFile(result)) {
 			return result;
