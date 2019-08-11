@@ -17,6 +17,8 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import org.apache.commons.cli.CommandLine;
@@ -32,7 +34,10 @@ public class EncryptPathCommand implements Command {
 
 	private static final String USAGE = "" //
 			+ "-vault vaultPath" //
-			+ " [-passphraseFile passphraseFile]";
+			+ " [-passphraseFile passphraseFile]"
+			+ " [-cleartextPath cleartextPath]"
+			+ " [-cleartextListFile cleartextListFile]"
+			+ " [-outputPath outputPath]";
 	private static final String HEADER = "\nEncrypt cleartext paths for a Cryptomator vault.\n";
 	private static final Options OPTIONS = new Options();
 
@@ -56,10 +61,30 @@ public class EncryptPathCommand implements Command {
 				.argName("passphraseFile") //
 				.desc("A file to read the password from. Omit this and you will be promted for the passphrase.") //
 				.build());
+		OPTIONS.addOption(Option.builder() //
+				.longOpt("cleartextPath") //
+				.hasArg() //
+				.argName("cleartextPath") //
+				.desc("Path of the cleartext file in the vault. Omit this and you will be prompted for the path.") //
+				.build());
+		OPTIONS.addOption(Option.builder()
+				.longOpt("cleartextListFile")
+				.hasArg()
+				.argName("cleartextListFile")
+				.desc("Path to a line-separated file that lists cleartexts in the vault. This can be used to substitute for cleartextPath.")
+				.build());
+		OPTIONS.addOption(Option.builder()
+				.longOpt("outputPath")
+				.hasArg()
+				.argName("outputPath")
+				.desc("Path of the output file. Supported extensions: txt, csv")
+				.build());
 	}
 
 	private Path vaultLocation;
 	private Passphrase passphrase;
+	private List<String> cleartextList;
+	private String outputPath;
 
 	@Override
 	public String commandLineValue() {
@@ -85,6 +110,8 @@ public class EncryptPathCommand implements Command {
 		CommandLine commandLine = new DefaultParser().parse(OPTIONS, arguments);
 		this.vaultLocation = vaultLocation(commandLine);
 		this.passphrase = passphrase(commandLine);
+		this.cleartextList = this.cleartextList(commandLine);
+		this.outputPath = outputPath(commandLine);
 	}
 
 	private Passphrase passphrase(CommandLine commandLine) throws ParseException {
@@ -150,6 +177,14 @@ public class EncryptPathCommand implements Command {
 		return passphrase;
 	}
 
+	public List<String> cleartextList() {
+		return cleartextList;
+	}
+
+	public String outputPath() {
+		return outputPath;
+	}
+
 	private Passphrase readPassphrase() throws AbortCheckException {
 		Console console = System.console();
 		if (console == null) {
@@ -169,6 +204,31 @@ public class EncryptPathCommand implements Command {
 			// handled below
 		}
 		throw new ParseException("vaultLocation is not a directory");
+	}
+
+	private List<String> cleartextList(CommandLine commandLine) throws ParseException {
+		if (commandLine.hasOption("cleartextPath")) {
+			return Arrays.asList(new String[]{commandLine.getOptionValue("cleartextPath")});
+		} else {
+			if (commandLine.hasOption("cleartextListFile")) {
+				try {
+					return Files.readAllLines(Paths.get(commandLine.getOptionValue("cleartextListFile")));
+				} catch (IOException e) {
+					throw new ParseException(e.toString());
+				}
+			} else {
+				return null;
+			}
+		}
+	}
+
+	private String outputPath(CommandLine commandLine) {
+		if (commandLine.hasOption("outputPath")) {
+			String outputPathRaw = commandLine.getOptionValue("outputPath");
+			return outputPathRaw;
+		} else {
+			return null;
+		}
 	}
 
 }
