@@ -11,7 +11,7 @@ You will need Java 9 installed to run it.
 ## Usage
 
 ```
-java -jar sanitizer-0.15.jar command ...
+java -jar sanitizer-0.16.jar command ...
 
 commands:
 * check - check a vault for problems
@@ -25,7 +25,7 @@ A more detailed guide on how to use Sanitizer can be found [here](https://commun
 ### check command usage
 
 ```
-java -jar sanitizer-0.15.jar check -vault vaultPath [-passphraseFile passphraseFile] [-deep] [-solve enabledSolution ...] [-output outputPrefix]
+java -jar sanitizer-0.16.jar check -vault vaultPath [-passphraseFile passphraseFile] [-deep] [-solve enabledSolution ...] [-output outputPrefix]
 
 Detects problems in Cryptomator vaults.
 
@@ -55,7 +55,7 @@ Detects problems in Cryptomator vaults.
 ### decryptFile command usage
 
 ```
-java -jar sanitizer-0.15.jar decryptFile -vault vaultPath [-passphraseFile passphraseFile]
+java -jar sanitizer-0.16.jar decryptFile -vault vaultPath [-passphraseFile passphraseFile]
 
 Decrypts single Cryptomator files.
 
@@ -72,7 +72,7 @@ Decrypts single Cryptomator files.
 ### encryptPath command usage
 
 ```
-java -jar sanitizer-0.15.jar encryptPath -vault vaultPath [-passphraseFile passphraseFile]
+java -jar sanitizer-0.16.jar encryptPath -vault vaultPath [-passphraseFile passphraseFile] [-cleartextPath cleartextPath] [-cleartextListFile cleartextListFile] [-outputPath outputPath]
 
 Encrypt cleartext paths for a Cryptomator vault.
 
@@ -84,12 +84,22 @@ Encrypt cleartext paths for a Cryptomator vault.
                                         this and you will be promted for the
                                         passphrase.
     --vault <vaultPath>                 On which vault to work.
+    --cleartextPath <cleartextPath>     Path of the cleartext file in the
+                                        vault. Omit this and you will be
+                                        prompted for the path.
+    --cleartextListFile <cleartextListFile>
+                                        Path to a line-separated file that
+                                        lists cleartexts in the vault. This
+                                        can be used to substitute for
+                                        cleartextPath.
+    --outputPath <outputPath>           Path of the output file.
+                                        Supported extensions: txt, csv
 ```
 
 ### decryptVault command usage
 
 ```
-java -jar sanitizer-0.15.jar decryptVault -vault vaultPath -target targetPath [-passphraseFile passphraseFile]
+java -jar sanitizer-0.16.jar decryptVault -vault vaultPath -target targetPath [-passphraseFile passphraseFile]
 
 Decrypts all data from a vault and tries to restore inaccessible data.
 
