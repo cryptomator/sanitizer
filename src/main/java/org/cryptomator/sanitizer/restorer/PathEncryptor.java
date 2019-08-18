@@ -63,17 +63,17 @@ public class PathEncryptor {
 
 	private static void printResolvedPaths(Console console, Map<String, Path> paths, String outputPath) throws IOException {
 		if (outputPath != null) {
-			BufferedWriter writer = new BufferedWriter(new FileWriter(outputPath));
-			String line;
-			for (Map.Entry entry : paths.entrySet()) {
-				if (outputPath.endsWith(".csv")) {
-					line = String.format("\"%s\",\"%s\"", entry.getKey(), entry.getValue());
-				} else {
-					line = String.format("%s: %s", entry.getKey(), entry.getValue());
+			try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputPath))) {
+				String line;
+				for (Map.Entry entry : paths.entrySet()) {
+					if (outputPath.endsWith(".csv")) {
+						line = String.format("\"%s\",\"%s\"", entry.getKey(), entry.getValue());
+					} else {
+						line = String.format("%s: %s", entry.getKey(), entry.getValue());
+					}
+					writer.write(line + "\n");
 				}
-				writer.write(line + "\n");
 			}
-			writer.close();
 		} else {
 			for (Map.Entry entry : paths.entrySet()) {
 				console.printf("%s: %s\n", entry.getValue());
