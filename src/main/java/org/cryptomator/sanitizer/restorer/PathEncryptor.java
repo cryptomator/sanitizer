@@ -76,7 +76,7 @@ public class PathEncryptor {
 			}
 		} else {
 			for (Map.Entry entry : paths.entrySet()) {
-				console.printf("%s: %s\n", entry.getValue());
+				console.printf("%s: %s\n", entry.getKey(), entry.getValue());
 				console.flush();
 			}
 		}
