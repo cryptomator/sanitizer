@@ -38,15 +38,15 @@ public class PathEncryptor {
 			paths.put(cleartextPath, null);
 		}
 
-		for (Map.Entry entry : paths.entrySet()){
-            try {
+		for (Map.Entry entry : paths.entrySet()) {
+			try {
 				entry.setValue(resolvePath(vaultLocation, console, cryptor, (String) entry.getKey()));
-            } catch (NoSuchFileException e) {
-            	// entry.value will remain null and will be handled at a later point.
-            }
-        }
+			} catch (NoSuchFileException e) {
+				// entry.value will remain null and will be handled at a later point.
+			}
+		}
 
-        printResolvedPaths(console, paths, outputPath);
+		printResolvedPaths(console, paths, outputPath);
 
 		cryptor.destroy();
 	}
@@ -61,7 +61,7 @@ public class PathEncryptor {
 		}
 	}
 
-    private static void printResolvedPaths(Console console, Map<String, Path> paths, String outputPath) throws IOException {
+	private static void printResolvedPaths(Console console, Map<String, Path> paths, String outputPath) throws IOException {
 		if (outputPath != null) {
 			BufferedWriter writer = new BufferedWriter(new FileWriter(outputPath));
 			String line;
@@ -80,6 +80,6 @@ public class PathEncryptor {
 				console.flush();
 			}
 		}
-    }
+	}
 
 }
