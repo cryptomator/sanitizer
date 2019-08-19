@@ -18,7 +18,7 @@ class EncryptPathRunner implements Runnable {
 	@Override
 	public void run() {
 		try (Passphrase passphrase = args.passphrase()) {
-			PathEncryptor.encryptPath(args.vaultLocation(), passphrase);
+			PathEncryptor.encryptPath(args.vaultLocation(), passphrase, args.cleartextList(), args.outputPath());
 		} catch (InvalidPassphraseException e) {
 			System.err.println("Invalid passphrase.");
 		} catch (AbortCheckException e) {
